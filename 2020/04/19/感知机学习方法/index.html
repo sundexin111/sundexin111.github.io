@@ -27,7 +27,7 @@
 <meta property="og:image" content="https://res.cloudinary.com/blod/image/upload/v1587282444/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/6_ybvizd.png">
 <meta property="og:image" content="https://res.cloudinary.com/blod/image/upload/v1587282993/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/7_bs9en6.png">
 <meta property="article:published_time" content="2020-04-19T04:21:16.000Z">
-<meta property="article:modified_time" content="2020-04-19T12:18:45.264Z">
+<meta property="article:modified_time" content="2020-04-19T13:59:36.429Z">
 <meta property="article:author" content="若枫">
 <meta property="article:tag" content="神经网络">
 <meta name="twitter:card" content="summary">
@@ -251,7 +251,7 @@
 <p>去掉了偏置之后，神经网络的决策边界必定穿过坐标轴的原点。为保证简化后的网络依然能解决上述测试问题，从下图可以看出，这样的决策边界有无穷多个。每一个决策边界对应的权值向量与决策边界正交。我们希望学习规则能够找到指向这些方向的一个权值向量。</p>
 <h2 id="3-2-学习规则的构建"><a href="#3-2-学习规则的构建" class="headerlink" title="3.2 学习规则的构建"></a>3.2 学习规则的构建</h2><p>开始训练时，需要给网络的参数赋予初始值。对于两输出/单输出的无偏置网络，所以仅需对两个权值进行初始化：$_1w^T=\begin{bmatrix}rand_1&amp;rand_2\end{bmatrix}$ ，这里随机取 $_1w^T=\begin{bmatrix}1&amp;-0.8\end{bmatrix}$</p>
 <p>现在将向量输入网络，首先是${p_1=\begin{bmatrix}1&amp;2\end{bmatrix}^T,t_1=1}$，则有：</p>
-<script type="math/tex; mode=display">a=hardlim(w^Tp_1)=hardlim(\begin{bmatrix}1&-0.8\end{bmatrix}\begin{bmatrix}1\\2\end{bmatrix})=hardlim(-0.6)=0</script><p>网络没有返回正确的目标值$t_1=1$。从下图中可以看出，初始权值向量决定的决策边界导致了对$p_1=\begin{bmatrix}1\2 \end{bmatrix}$的错误区分。由于权值向量总是指向神经元输出为1的区域，因此需要调整权值向量，使它的指向更偏向$p_1$，才更有可能得到正确的分类结果。</p>
+<script type="math/tex; mode=display">a=hardlim(w^Tp_1)=hardlim(\begin{bmatrix}1&-0.8\end{bmatrix}\begin{bmatrix}1\\2\end{bmatrix})=hardlim(-0.6)=0</script><p>网络没有返回正确的目标值$t_1=1$。从下图中可以看出，初始权值向量决定的决策边界导致了对$p_1=\begin{bmatrix}1&amp;2\end{bmatrix}^T$的错误区分。由于权值向量总是指向神经元输出为1的区域，因此需要调整权值向量，使它的指向更偏向$p_1$，才更有可能得到正确的分类结果。</p>
 <p><img src="https://res.cloudinary.com/blod/image/upload/v1587281780/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/4_kckuq6.png" alt=""></p>
 <p>一种调整方法是直接令$_1w=p_1$，这种简单的处理方式能够保证 $p_1$被正确分类，对于本问题这种方法是可行的。但是对于某些问题却无法解决，例如下图中令权值向量等于●中的任意一个，都无法得到正确的分类结果，必然有一个会被误分。</p>
 <p><img src="https://res.cloudinary.com/blod/image/upload/v1587281862/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/5_ehrxnw.png" alt=""></p>
