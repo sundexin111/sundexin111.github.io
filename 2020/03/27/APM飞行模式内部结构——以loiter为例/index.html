@@ -8,17 +8,17 @@
   <link rel="dns-prefetch" href="http://yoursite.com">
   <title>APM飞行模式内部结构——以loiter为例 | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="飞行模式的架构我已经在上一篇博文中提到了，本文将lotiter模式为例，详细讲解一下lotier模式的内部控制链。lotier模式即为悬停模式，也是GPS定点模式。在起飞前确保GPS是打开的。飞手控制的是飞机水平方向的加速度。控制链如下： 1 主循环（fast_loop()）循环是以400Hz调用的。包括以下函数： 1234567ins.update();&#x2F;&#x2F;更新惯导数据attitude_cont">
+  <meta name="description" content="飞行模式的架构我已经在上一篇博文中提到了，本文将lotiter模式为例，详细讲解一下lotier模式的内部控制链。lotier模式即为悬停模式，也是GPS定点模式。在起飞前确保GPS是打开的。飞手控制的是飞机水平方向的加速度。控制链如下：">
 <meta property="og:type" content="article">
 <meta property="og:title" content="APM飞行模式内部结构——以loiter为例">
 <meta property="og:url" content="http://yoursite.com/2020/03/27/APM%E9%A3%9E%E8%A1%8C%E6%A8%A1%E5%BC%8F%E5%86%85%E9%83%A8%E7%BB%93%E6%9E%84%E2%80%94%E2%80%94%E4%BB%A5loiter%E4%B8%BA%E4%BE%8B/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="飞行模式的架构我已经在上一篇博文中提到了，本文将lotiter模式为例，详细讲解一下lotier模式的内部控制链。lotier模式即为悬停模式，也是GPS定点模式。在起飞前确保GPS是打开的。飞手控制的是飞机水平方向的加速度。控制链如下： 1 主循环（fast_loop()）循环是以400Hz调用的。包括以下函数： 1234567ins.update();&#x2F;&#x2F;更新惯导数据attitude_cont">
+<meta property="og:description" content="飞行模式的架构我已经在上一篇博文中提到了，本文将lotiter模式为例，详细讲解一下lotier模式的内部控制链。lotier模式即为悬停模式，也是GPS定点模式。在起飞前确保GPS是打开的。飞手控制的是飞机水平方向的加速度。控制链如下：">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://img-blog.csdnimg.cn/20200327143858113.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM2NDE3MzMw,size_16,color_FFFFFF,t_70#pic_center">
 <meta property="article:published_time" content="2020-03-27T09:58:17.000Z">
-<meta property="article:modified_time" content="2020-04-19T12:56:41.123Z">
-<meta property="article:author" content="孙德鑫">
+<meta property="article:modified_time" content="2020-04-19T13:18:12.268Z">
+<meta property="article:author" content="若枫">
 <meta property="article:tag" content="APM">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://img-blog.csdnimg.cn/20200327143858113.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM2NDE3MzMw,size_16,color_FFFFFF,t_70#pic_center">
@@ -53,7 +53,7 @@
 			<img src="/assets/sundexin.jpg" class="js-avatar">
 		</a>
 		<hgroup>
-		  <h1 class="header-author"><a href="/">孙德鑫</a></h1>
+		  <h1 class="header-author"><a href="/">若枫</a></h1>
 		</hgroup>
 		
 
@@ -73,6 +73,8 @@
 				<li><a href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84">数据结构</a></li>
 	        
 				<li><a href="/tags/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C">神经网络</a></li>
+	        
+				<li><a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F">计算机系统</a></li>
 	        
 			</ul>
 		</nav>
@@ -117,10 +119,12 @@
 				<img src="/assets/sundexin.jpg" class="js-avatar">
 			</div>
 			<hgroup>
-			  <h1 class="header-author js-header-author">孙德鑫</h1>
+			  <h1 class="header-author js-header-author">若枫</h1>
 			</hgroup>
 			
 			
+			
+				
 			
 				
 			
@@ -152,19 +156,21 @@
 				<ul style="width: 70%">
 				
 				
-					<li style="width: 14.285714285714286%"><a href="/">主页</a></li>
+					<li style="width: 12.5%"><a href="/">主页</a></li>
 		        
-					<li style="width: 14.285714285714286%"><a href="/tags/%E9%9A%8F%E7%AC%94/">随笔</a></li>
+					<li style="width: 12.5%"><a href="/tags/%E9%9A%8F%E7%AC%94/">随笔</a></li>
 		        
-					<li style="width: 14.285714285714286%"><a href="/archives/index.html">归档</a></li>
+					<li style="width: 12.5%"><a href="/archives/index.html">归档</a></li>
 		        
-					<li style="width: 14.285714285714286%"><a href="/tags/APM/">APM</a></li>
+					<li style="width: 12.5%"><a href="/tags/APM/">APM</a></li>
 		        
-					<li style="width: 14.285714285714286%"><a href="/tags/C++">C++</a></li>
+					<li style="width: 12.5%"><a href="/tags/C++">C++</a></li>
 		        
-					<li style="width: 14.285714285714286%"><a href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84">数据结构</a></li>
+					<li style="width: 12.5%"><a href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84">数据结构</a></li>
 		        
-					<li style="width: 14.285714285714286%"><a href="/tags/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C">神经网络</a></li>
+					<li style="width: 12.5%"><a href="/tags/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C">神经网络</a></li>
+		        
+					<li style="width: 12.5%"><a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F">计算机系统</a></li>
 		        
 				</ul>
 			</nav>
@@ -200,7 +206,7 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>飞行模式的架构我已经在上一篇博文中提到了，本文将lotiter模式为例，详细讲解一下lotier模式的内部控制链。lotier模式即为悬停模式，也是GPS定点模式。在起飞前确保GPS是打开的。飞手控制的是飞机水平方向的加速度。控制链如下：<br><!-- mor--><br><img src="https://img-blog.csdnimg.cn/20200327143858113.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM2NDE3MzMw,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"></p>
+        <p>飞行模式的架构我已经在上一篇博文中提到了，本文将lotiter模式为例，详细讲解一下lotier模式的内部控制链。lotier模式即为悬停模式，也是GPS定点模式。在起飞前确保GPS是打开的。飞手控制的是飞机水平方向的加速度。控制链如下：<br><a id="more"></a><br><img src="https://img-blog.csdnimg.cn/20200327143858113.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM2NDE3MzMw,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"></p>
 <h1 id="1-主循环（fast-loop-）"><a href="#1-主循环（fast-loop-）" class="headerlink" title="1 主循环（fast_loop()）"></a>1 主循环（fast_loop()）</h1><p>循环是以400Hz调用的。包括以下函数：</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">ins.update();<span class="comment">//更新惯导数据</span></span><br><span class="line">attitude_control-&gt;rate_controller_run();<span class="comment">//姿态控制器</span></span><br><span class="line">motors_output();<span class="comment">//电机输出</span></span><br><span class="line">read_AHRS();<span class="comment">//读取飞行器姿态等基础数据</span></span><br><span class="line">read_inertia();<span class="comment">//读取惯性导航数据</span></span><br><span class="line">check_ekf_reset();<span class="comment">//检查ekf是否已重置目标航向或位置</span></span><br><span class="line">update_flight_mode();<span class="comment">//更新飞行模式</span></span><br></pre></td></tr></table></figure>
 <h1 id="2-重要函数"><a href="#2-重要函数" class="headerlink" title="2  重要函数"></a>2  重要函数</h1><h2 id="2-1-set-mode"><a href="#2-1-set-mode" class="headerlink" title="2.1 set_mode()"></a>2.1 set_mode()</h2><p>两个重要的接口函数，update_flight_mode()(在loop中)和set_mode()（不在loop中）,下面是set_mode()部分代码：</p>
@@ -408,7 +414,7 @@
   <div class="outer">
     <div id="footer-info">
     	<div class="footer-left">
-    		&copy; 2020 孙德鑫
+    		&copy; 2020 若枫
     	</div>
       	<div class="footer-right">
       		<a href="http://hexo.io/" target="_blank">Hexo</a>  Theme <a href="https://github.com/litten/hexo-theme-yilia" target="_blank">Yilia</a> by Litten
@@ -516,6 +522,10 @@ MathJax.Hub.Queue(function() {
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">APM</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">计算机系统</a>
               </li>
              
               <li class="article-tag-list-item">
