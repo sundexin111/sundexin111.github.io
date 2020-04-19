@@ -6,18 +6,19 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>Hello World | Hexo</title>
+  <title>卡尔曼滤波器 | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick">
+  <meta name="description" content="1 什么是卡尔曼滤波最近在阅读APM的源码，督导了姿态解算的部分，了解到姿态结算是依靠卡尔曼扩展滤波器（EKF）解算出位置的。然后笔者就去了解了卡尔曼滤波的相关知识。笔者的简单理解就是卡尔曼滤波就是计算出从你当前的位置到达目标位置的最优算法。比如说一个四旋翼无人机，你想让他从当前位置飞到100m外的目标地点（固定的），我们简单的认为只需要导航就可以了啊，但是实际情况下导航在引导无人机从当前位置到目">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Hello World">
-<meta property="og:url" content="http://yoursite.com/2020/04/18/hello-world/index.html">
+<meta property="og:title" content="卡尔曼滤波器">
+<meta property="og:url" content="http://yoursite.com/2020/04/01/%E5%8D%A1%E5%B0%94%E6%9B%BC%E6%BB%A4%E6%B3%A2%E5%99%A8/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick">
+<meta property="og:description" content="1 什么是卡尔曼滤波最近在阅读APM的源码，督导了姿态解算的部分，了解到姿态结算是依靠卡尔曼扩展滤波器（EKF）解算出位置的。然后笔者就去了解了卡尔曼滤波的相关知识。笔者的简单理解就是卡尔曼滤波就是计算出从你当前的位置到达目标位置的最优算法。比如说一个四旋翼无人机，你想让他从当前位置飞到100m外的目标地点（固定的），我们简单的认为只需要导航就可以了啊，但是实际情况下导航在引导无人机从当前位置到目">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2020-04-18T08:45:29.110Z">
-<meta property="article:modified_time" content="2020-04-18T08:45:29.110Z">
+<meta property="article:published_time" content="2020-04-01T05:44:31.000Z">
+<meta property="article:modified_time" content="2020-04-19T13:14:15.223Z">
 <meta property="article:author" content="孙德鑫">
+<meta property="article:tag" content="APM">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternative" href="/atom.xml" title="Hexo" type="application/atom+xml">
@@ -177,35 +178,102 @@
           </div>
           <div id="js-content" class="content-ll">
             
-<article id="post-hello-world" class="article article-type-post " itemscope itemprop="blogPost">
+<article id="post-卡尔曼滤波器" class="article article-type-post " itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
         
   
     <h1 class="article-title" itemprop="name">
-      Hello World
+      卡尔曼滤波器
     </h1>
   
 
         
-        <a href="/2020/04/18/hello-world/" class="archive-article-date">
-  	<time datetime="2020-04-18T08:45:29.110Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-18</time>
+        <a href="/2020/04/01/%E5%8D%A1%E5%B0%94%E6%9B%BC%E6%BB%A4%E6%B3%A2%E5%99%A8/" class="archive-article-date">
+  	<time datetime="2020-04-01T05:44:31.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-01</time>
 </a>
         
       </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html" target="_blank" rel="noopener">Deployment</a></p>
+        <h1 id="1-什么是卡尔曼滤波"><a href="#1-什么是卡尔曼滤波" class="headerlink" title="1 什么是卡尔曼滤波"></a>1 什么是卡尔曼滤波</h1><p>最近在阅读APM的源码，督导了姿态解算的部分，了解到姿态结算是依靠卡尔曼扩展滤波器（EKF）解算出位置的。然后笔者就去了解了卡尔曼滤波的相关知识。笔者的简单理解就是卡尔曼滤波就是计算出从你当前的位置到达目标位置的最优算法。比如说一个四旋翼无人机，你想让他从当前位置飞到100m外的目标地点（固定的），我们简单的认为只需要导航就可以了啊，但是实际情况下导航在引导无人机从当前位置到目标位置的过程中，会遇到很多噪<br>音，这样可能会使无人机偏离目标地点。有人说可以依靠数学模型计算出目标位置，但实际情况中有很多例子很难建出具体的数学模型，就算能建出具体的模型，但是在迭代的过程中有误差的话，会使这个误差越来越大，偏离目标地点。所以这就引出了卡尔曼滤波，它会结合传感器的测量值与数学模型的估算值得到最优估算状态。然后区分一下卡尔曼滤波和扩展卡尔曼滤波的区别，卡尔曼滤波主要用在线性系统中，扩展卡尔曼滤波主要用在非线性系统中（在APM姿态解算中主要用到扩展卡尔曼滤波（EKF））。本文将用最简单的例子介绍一下卡尔曼滤波器。<br><a id="more"></a><br>卡尔曼滤波使用的三个前提</p>
+<ul>
+<li>(1)系统是可观测的</li>
+<li>(2)系统为线性系统，能够写出下一时刻的状态预测方程</li>
+<li><p>(3)假设系统的噪声统计特性可观测</p>
+<h1 id="2-实例分析"><a href="#2-实例分析" class="headerlink" title="2 实例分析"></a>2 实例分析</h1><h2 id="2-1-数学模型的创建"><a href="#2-1-数学模型的创建" class="headerlink" title="2.1 数学模型的创建"></a>2.1 数学模型的创建</h2><p>我们举一个最简单的例子，一个小车在水平面上做匀速直线运动和匀加速直线运动（加速度为a）两种情况，让小车到达目标位置。<br>首先建立匀速直线运动小车的数学模型：</p>
+<script type="math/tex; mode=display">p_{k}=p_{k-1}+v.\Delta{t}</script><script type="math/tex; mode=display">v_k=v_{k-1}</script></li>
+<li><p>其中状态量用$x=\begin{bmatrix}x_k\v_k\end{bmatrix}$来表示</p>
+</li>
+<li>状态量估算量用$\hat{x}=\begin{bmatrix}p_k\v_k\end{bmatrix}$</li>
+</ul>
+<p>匀加速直线运动小车的数学模型：</p>
+<script type="math/tex; mode=display">p_{k}=p_{k-1}+v.\Delta{t}+\frac{1}{2}\Delta{t}^2</script><script type="math/tex; mode=display">v_k=v_{k-1}+a\Delta{t}</script><p>将这两个数学模型转化为线性空间形式：</p>
+<script type="math/tex; mode=display">\hat{x}_k=F_k\hat{X}_{k-1}+B_ku_k</script><p>其中：</p>
+<ul>
+<li>转换矩阵 <script type="math/tex">F_k=\begin{bmatrix} 1 & \Delta{t} \\ 0 & 1\\ \end{bmatrix}</script></li>
+<li>控制矩阵<script type="math/tex">B_k=\begin{bmatrix}\frac{1}{2}\Delta{t}^2 \\ \Delta{t}\\ \end{bmatrix}</script></li>
+<li>u代表输入量，这里即为a</li>
+</ul>
+<p>如果有噪声的话，且知道噪声的分布情况$w_k$~$N(0,Q_k)$<br>那么：</p>
+<script type="math/tex; mode=display">\hat{x}_k=F_k\hat{x}_{k-1}+B_ku_k+w_k\tag{1}</script><script type="math/tex; mode=display">P_k=F_kP_{k-1}F_k^T+Q_k\tag{2}</script><p>其中：</p>
+<ul>
+<li>$P<em>k$为协方差矩阵 $P_k=\begin{bmatrix}\Sigma</em>{PP}&amp;\Sigma<em>{PV} \  \Sigma</em>{VP}&amp; \Sigma_{VV}\ \end{bmatrix}$<br>如果不了解什么是协方差的话可以查看一下wiki:<a href="https://zh.wikipedia.org/wiki/%E5%8D%8F%E6%96%B9%E5%B7%AE" target="_blank" rel="noopener">https://zh.wikipedia.org/wiki/%E5%8D%8F%E6%96%B9%E5%B7%AE</a></li>
+<li>这里用到了协方差矩阵的一个基本性质：<script type="math/tex; mode=display">Cov(x)=\Sigma</script><script type="math/tex; mode=display">Cov(Ax)=A\Sigma A^T</script></li>
+<li>（2）式就是由（1）式两边求协方差得到的。<br>这样我们就得到了小车在数学模型下的分布：<br>$x$~$N(\hat x_k,P_k)$<br>其中：</li>
+<li>$\hat x_k$为期望</li>
+<li><p>$P_k$为方差</p>
+<h2 id="2-2-投影到传感器上"><a href="#2-2-投影到传感器上" class="headerlink" title="2.2 投影到传感器上"></a>2.2 投影到传感器上</h2><p>我们上面已经说过了，单靠数学模型是远远不够的，我们还要根据传感器监测到的数据，和数学模型预测出的数据进行整合，得到最优算法。那么我们首先要将传感器测得的数据与数学模型预测的数据放在一个坐标系下。<br>假设我们已经知道从数学模型到测量模型下的转换矩为$H_k$,可得：</p>
+</li>
+<li><p>$u_{expedicted}=H_k\hat x_k$</p>
+</li>
+<li>$\Sigma_{expected}=H_kP_kH_k^T$</li>
+</ul>
+<p>可得：<br>$X_{expedicted}$~$N(H_k\hat x_k,H_kP_kH_k^T)$</p>
+<p>而传感器上测得的状态量符合：<br>$Y_{measurment}$~$N(z_k,R_k)$ (其中Noise:$v_k$~$N(0,R_k)$)</p>
+<h2 id="2-3-应用卡尔曼得到最优估计"><a href="#2-3-应用卡尔曼得到最优估计" class="headerlink" title="2.3 应用卡尔曼得到最优估计"></a>2.3 应用卡尔曼得到最优估计</h2><p>由2.2我们得到了传感器和数学模型两个分布，接下来到了最重要的环节，就是利用卡尔曼滤波将两个分布整合，得到一个最优分布。具体做法就是$\color{red}{将两个正太分布相乘}$。下面我们要补充一个知识点，就是如何将两个正态分布相乘：</p>
+<ul>
+<li>X~$N(\mu_1,\sigma_1^2)$       </li>
+<li>Y~$N(\mu_2,\sigma_2^2)$</li>
+</ul>
+<p>对于二者相乘新的分布为：</p>
+<ul>
+<li>k=$\frac{\sigma_1^2}{\sigma_1^2+\sigma_2^2}$</li>
+<li>$\mu^ {‘}=\mu_1+k(\mu_2-\mu_1)$</li>
+<li>$\sigma_1^{‘2}=\sigma_1^2+k\sigma_1^2$</li>
+</ul>
+<p>转化为矩阵形式：</p>
+<ul>
+<li>$K^{‘}$=$\frac{\Sigma_1}{\Sigma_1+\Sigma_2}$</li>
+<li>$\vec\mu^ {‘}=\vec\mu_1+K^{‘}(\vec\mu_2-\vec\mu_1)$</li>
+<li>$\Sigma_1^{‘}=\Sigma_1+K^{‘}\Sigma_1^{‘}$</li>
+</ul>
+<p>由$K^{‘}$=$\frac{\Sigma_1}{\Sigma_1+\Sigma_2}$可得$K^{‘}=\frac {H_kP_kH_k^T}{H_kP_kH_k^T+R_k})$<br>所以相乘后的均值：</p>
+<ul>
+<li>$H_kx_k^{‘}=H_k\hat x_k+K^{‘}(z_k-H_k\hat x_k)$</li>
+</ul>
+<p>相乘后的新方差：</p>
+<ul>
+<li>$H_kP_k{‘}H_k^{T}=H_kP_kH_k^T+K^{‘}H_kP_kH_k^T$</li>
+</ul>
+<p>由上面两个式子可得：</p>
+<ul>
+<li>$x_k^{‘}=\hat x_k+\frac {K^{‘}}{H_k}(z_k-H_k\hat x_k)$</li>
+<li>$P_k{‘}=P_k+K^{‘}P_k$</li>
+</ul>
+<p>我们引入一个新的概念，$\color{red}{卡尔曼增益K}$:</p>
+<script type="math/tex; mode=display">\color{red}{K=\frac {K^{'}}{H_k}=\frac {P_kH_k^T}{H_kP_kH_k^T+R_k}}</script><p>由此得到经过卡尔曼滤波后的最优状态估计：</p>
+<script type="math/tex; mode=display">\color{red}\hat{x}_k^{'}=\hat{x}_k+K(z_k-H_k\hat{x}_k)</script><script type="math/tex; mode=display">\color{red}P_k^{'}=P_k+KH_kP_k</script><h1 id="3-总结"><a href="#3-总结" class="headerlink" title="3 总结"></a>3 总结</h1><p>卡尔曼滤波器程序步骤</p>
+<ol>
+<li>从当前状态计算下一步状态（估算）<br>$\hat{x}<em>k= F_k\hat{x}</em>{k-1}+B<em>ku_k+w_k$<br>$P_k=F_kP</em>{K-1}F<em>k^T+Q$<br>$X</em>{predict}$~$N(H_k\hat{x}_k,H_kP_kx_k^T)$ </li>
+<li>根据传感器计算均值和方差<br>$Y_{measurent}$ ~ $N(z_k,R_k)$<ol>
+<li>计算卡尔曼滤波<br>$K=\frac{K^{‘}}{H_k}=\frac{P_kH_k^T}{H_kP_kH_k^T+P_k}$<br>$\hat{x}_k^{‘}=\hat{x}_k+K(Z_k-H_k\hat{x}_k)$<br>$P_k^{‘}=P_k+KH_kP_k$</li>
+<li>将计算出的$\hat{x}_k^{‘}$与$P_k^{‘}$带入第一步迭代，计算下一步最优状态。</li>
+</ol>
+</li>
+</ol>
 
       
 
@@ -240,6 +308,17 @@
     <div class="article-info article-info-index">
       
       
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">APM</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
       
 
       
@@ -290,7 +369,7 @@
     <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
     <p>扫一扫，分享到微信</p>
     <div class="wx-qrcode">
-      <img src="//api.qrserver.com/v1/create-qr-code/?size=150x150&data=sundexin111.github.io2020/04/18/hello-world/" alt="微信分享二维码">
+      <img src="//api.qrserver.com/v1/create-qr-code/?size=150x150&data=sundexin111.github.io2020/04/01/%E5%8D%A1%E5%B0%94%E6%9B%BC%E6%BB%A4%E6%B3%A2%E5%99%A8/" alt="微信分享二维码">
     </div>
 </div>
 
@@ -304,15 +383,20 @@
   
 <nav id="article-nav">
   
-    <a href="/2020/04/19/%E6%84%9F%E7%9F%A5%E6%9C%BA%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2020/04/06/%E6%89%A9%E5%B1%95%E5%8D%A1%E5%B0%94%E6%9B%BC%E6%BB%A4%E6%B3%A2%E5%99%A8/" id="article-nav-newer" class="article-nav-link-wrap">
       <i class="icon-circle-left"></i>
       <div class="article-nav-title">
         
-          感知机学习方法
+          扩展卡尔曼滤波器
         
       </div>
     </a>
   
+  
+    <a href="/2020/03/30/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E2%80%94%E2%80%94%E6%A0%88/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">数据结构——栈</div>
+      <i class="icon-circle-right"></i>
+    </a>
   
 </nav>
 
@@ -337,7 +421,7 @@
                 </span>
                 <span class="tooltip-content">
                     <div class="toc-article">
-                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Quick-Start"><span class="toc-number">1.</span> <span class="toc-text">Quick Start</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Create-a-new-post"><span class="toc-number">1.1.</span> <span class="toc-text">Create a new post</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Run-server"><span class="toc-number">1.2.</span> <span class="toc-text">Run server</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Generate-static-files"><span class="toc-number">1.3.</span> <span class="toc-text">Generate static files</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Deploy-to-remote-sites"><span class="toc-number">1.4.</span> <span class="toc-text">Deploy to remote sites</span></a></li></ol></li></ol>
+                    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#1-什么是卡尔曼滤波"><span class="toc-number">1.</span> <span class="toc-text">1 什么是卡尔曼滤波</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#2-实例分析"><span class="toc-number">2.</span> <span class="toc-text">2 实例分析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-数学模型的创建"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 数学模型的创建</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-2-投影到传感器上"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 投影到传感器上</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-3-应用卡尔曼得到最优估计"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 应用卡尔曼得到最优估计</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#3-总结"><span class="toc-number">3.</span> <span class="toc-text">3 总结</span></a></li></ol>
                     </div>
                 </span>
             </div>
@@ -473,7 +557,15 @@ MathJax.Hub.Queue(function() {
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">APM</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">神经网络</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">数据结构</a>
               </li>
             
             <div class="clearfix"></div>
