@@ -8,15 +8,15 @@
   <link rel="dns-prefetch" href="http://yoursite.com">
   <title>win10解决未安装任何音频输出设备 | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="最近刚刚更新了一下win10系统，开始啥问题没有，晚上睡觉关机后，第二天开机，小喇叭处有一个红叉，显示未安装任何音频输出设备。查看了微软的官网以及百度了很多解决方法，电脑重启了n遍还是没有解决，一度接近崩溃，我都怀疑我的声卡坏了，但是由于我电脑有两个系统，另一个系统是有声音的，所以确定硬件没换，还是软件的问题。废话不多说了，如果百度上的那些常规方法都试过了还是解决不了，你可以试试下面这个方法，这里">
+  <meta name="description" content="最近刚刚更新了一下win10系统，开始啥问题没有，晚上睡觉关机后，第二天开机，小喇叭处有一个红叉，显示未安装任何音频输出设备。查看了微软的官网以及百度了很多解决方法，电脑重启了n遍还是没有解决，一度接近崩溃，我都怀疑我的声卡坏了，但是由于我电脑有两个系统，另一个系统是有声音的，所以确定硬件没换，还是软件的问题。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="win10解决未安装任何音频输出设备">
 <meta property="og:url" content="http://yoursite.com/2020/04/08/win10%E8%A7%A3%E5%86%B3%E6%9C%AA%E5%AE%89%E8%A3%85%E4%BB%BB%E4%BD%95%E9%9F%B3%E9%A2%91%E8%BE%93%E5%87%BA%E8%AE%BE%E5%A4%87/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="最近刚刚更新了一下win10系统，开始啥问题没有，晚上睡觉关机后，第二天开机，小喇叭处有一个红叉，显示未安装任何音频输出设备。查看了微软的官网以及百度了很多解决方法，电脑重启了n遍还是没有解决，一度接近崩溃，我都怀疑我的声卡坏了，但是由于我电脑有两个系统，另一个系统是有声音的，所以确定硬件没换，还是软件的问题。废话不多说了，如果百度上的那些常规方法都试过了还是解决不了，你可以试试下面这个方法，这里">
+<meta property="og:description" content="最近刚刚更新了一下win10系统，开始啥问题没有，晚上睡觉关机后，第二天开机，小喇叭处有一个红叉，显示未安装任何音频输出设备。查看了微软的官网以及百度了很多解决方法，电脑重启了n遍还是没有解决，一度接近崩溃，我都怀疑我的声卡坏了，但是由于我电脑有两个系统，另一个系统是有声音的，所以确定硬件没换，还是软件的问题。">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2020-04-08T09:44:47.000Z">
-<meta property="article:modified_time" content="2020-04-19T13:18:49.070Z">
+<meta property="article:modified_time" content="2020-04-19T13:22:27.985Z">
 <meta property="article:author" content="若枫">
 <meta property="article:tag" content="计算机系统">
 <meta name="twitter:card" content="summary">
@@ -204,7 +204,7 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>最近刚刚更新了一下win10系统，开始啥问题没有，晚上睡觉关机后，第二天开机，小喇叭处有一个红叉，显示未安装任何音频输出设备。查看了微软的官网以及百度了很多解决方法，电脑重启了n遍还是没有解决，一度接近崩溃，我都怀疑我的声卡坏了，但是由于我电脑有两个系统，另一个系统是有声音的，所以确定硬件没换，还是软件的问题。<br>废话不多说了，如果百度上的那些常规方法都试过了还是解决不了，你可以试试下面这个方法，这里十分感谢<a href="https://blog.csdn.net/huyungui1/article/details/103046243?depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromBaidu-2&amp;utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromBaidu-2" target="_blank" rel="noopener">huyungui1</a>这个大佬，跪拜一下，解决了我一下午未解决的问题。<br>左下角windows图标右键，选windows powershell管理员：输入下面两行代码：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">net localgroup Administrators /add networkservice</span><br><span class="line"></span><br><span class="line">net localgroup Administrators /add localservice</span><br></pre></td></tr></table></figure><br>然后重启一下就ok了。<br>激动的心，颤抖的手，赶紧去试试吧！</p>
+        <p>最近刚刚更新了一下win10系统，开始啥问题没有，晚上睡觉关机后，第二天开机，小喇叭处有一个红叉，显示未安装任何音频输出设备。查看了微软的官网以及百度了很多解决方法，电脑重启了n遍还是没有解决，一度接近崩溃，我都怀疑我的声卡坏了，但是由于我电脑有两个系统，另一个系统是有声音的，所以确定硬件没换，还是软件的问题。<br><a id="more"></a><br>废话不多说了，如果百度上的那些常规方法都试过了还是解决不了，你可以试试下面这个方法，这里十分感谢<a href="https://blog.csdn.net/huyungui1/article/details/103046243?depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromBaidu-2&amp;utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromBaidu-2" target="_blank" rel="noopener">huyungui1</a>这个大佬，跪拜一下，解决了我一下午未解决的问题。<br>左下角windows图标右键，选windows powershell管理员：输入下面两行代码：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">net localgroup Administrators /add networkservice</span><br><span class="line"></span><br><span class="line">net localgroup Administrators /add localservice</span><br></pre></td></tr></table></figure><br>然后重启一下就ok了。<br>激动的心，颤抖的手，赶紧去试试吧！</p>
 
       
 
