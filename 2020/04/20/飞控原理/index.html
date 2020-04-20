@@ -6,15 +6,52 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>Hexo</title>
+  <title>飞控原理 | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Hexo">
-<meta property="og:url" content="http://yoursite.com/index.html">
+  <meta name="description" content="                     9.1 飞控算法理论与设计                  前言¶ 这里会向读者介绍有关 Breeze Mini 飞控算法理论与程序设计的相关知识。先简单介绍一下飞控是什么，飞控全称为 飞行控制算法(Flight Control Algorithm)，即通过获取 惯性传感单元(Inertial Measurem">
+<meta property="og:type" content="article">
+<meta property="og:title" content="飞控原理">
+<meta property="og:url" content="http://yoursite.com/2020/04/20/%E9%A3%9E%E6%8E%A7%E5%8E%9F%E7%90%86/index.html">
 <meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="                     9.1 飞控算法理论与设计                  前言¶ 这里会向读者介绍有关 Breeze Mini 飞控算法理论与程序设计的相关知识。先简单介绍一下飞控是什么，飞控全称为 飞行控制算法(Flight Control Algorithm)，即通过获取 惯性传感单元(Inertial Measurem">
 <meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://microdynamics-1256406063.cos.ap-shanghai.myqcloud.com/breeze/embedded/flight_control_dji.jpg">
+<meta property="og:image" content="https://microdynamics-1256406063.cos.ap-shanghai.myqcloud.com/breeze/embedded/flight_control_crazepony.png">
+<meta property="og:image" content="https://microdynamics-1256406063.cos.ap-shanghai.myqcloud.com/breeze/embedded/flight_control_alientek.png">
+<meta property="og:image" content="https://microdynamics-1256406063.cos.ap-shanghai.myqcloud.com/breeze/embedded/flight_control_apm.png">
+<meta property="og:image" content="https://microdynamics-1256406063.cos.ap-shanghai.myqcloud.com/breeze/embedded/flight_control_px4.png">
+<meta property="og:image" content="https://microdynamics-1256406063.cos.ap-shanghai.myqcloud.com/breeze/embedded/flight_control_cc3d.png">
+<meta property="og:image" content="https://microdynamics-1256406063.cos.ap-shanghai.myqcloud.com/breeze/embedded/flight_control_mwc.jpg">
+<meta property="og:image" content="https://microdynamics-1256406063.cos.ap-shanghai.myqcloud.com/breeze/embedded/flight_control_ppz.jpg">
+<meta property="og:image" content="https://microdynamics-1256406063.cos.ap-shanghai.myqcloud.com/breeze/embedded/flight_control_crazeflie.png">
+<meta property="og:image" content="https://microdynamics-1256406063.cos.ap-shanghai.myqcloud.com/breeze/embedded/breeze_coordinate_geography.png">
+<meta property="og:image" content="https://microdynamics-1256406063.cos.ap-shanghai.myqcloud.com/breeze/embedded/breeze_coordinate_body.jpg">
+<meta property="og:image" content="https://microdynamics-1256406063.cos.ap-shanghai.myqcloud.com/breeze/embedded/breeze_motor_layout.jpg">
+<meta property="og:image" content="https://microdynamics-1256406063.cos.ap-shanghai.myqcloud.com/breeze/embedded/breeze_motion_a.jpg">
+<meta property="og:image" content="https://microdynamics-1256406063.cos.ap-shanghai.myqcloud.com/breeze/embedded/breeze_motion_b.jpg">
+<meta property="og:image" content="https://microdynamics-1256406063.cos.ap-shanghai.myqcloud.com/breeze/embedded/breeze_motion_c.jpg">
+<meta property="og:image" content="https://microdynamics-1256406063.cos.ap-shanghai.myqcloud.com/breeze/embedded/breeze_euler_angles.png">
+<meta property="og:image" content="https://microdynamics-1256406063.cos.ap-shanghai.myqcloud.com/breeze/algorithm/MPU6050_RawGyroData.png">
+<meta property="og:image" content="https://microdynamics-1256406063.cos.ap-shanghai.myqcloud.com/breeze/algorithm/MPU6050_RawGyroNoiseData.png">
+<meta property="og:image" content="https://microdynamics-1256406063.cos.ap-shanghai.myqcloud.com/breeze/algorithm/MPU6050_RawAccData.png">
+<meta property="og:image" content="https://microdynamics-1256406063.cos.ap-shanghai.myqcloud.com/breeze/algorithm/MPU6050_RawAccNoiseData.png">
+<meta property="og:image" content="https://microdynamics-1256406063.cos.ap-shanghai.myqcloud.com/breeze/algorithm/IIR_difference_equation.png">
+<meta property="og:image" content="https://microdynamics-1256406063.cos.ap-shanghai.myqcloud.com/breeze/algorithm/IIR_direct_form_1.png">
+<meta property="og:image" content="https://microdynamics-1256406063.cos.ap-shanghai.myqcloud.com/breeze/algorithm/IIR_direct_form_2.png">
+<meta property="og:image" content="https://microdynamics-1256406063.cos.ap-shanghai.myqcloud.com/breeze/algorithm/IIR_filter_design.png">
+<meta property="og:image" content="https://microdynamics-1256406063.cos.ap-shanghai.myqcloud.com/breeze/algorithm/IIR_filter_coeff_section.png">
+<meta property="og:image" content="https://microdynamics-1256406063.cos.ap-shanghai.myqcloud.com/breeze/algorithm/IIR_filter_coeff_convert.png">
+<meta property="og:image" content="https://microdynamics-1256406063.cos.ap-shanghai.myqcloud.com/breeze/algorithm/MPU6050_FilteredGyroData.png">
+<meta property="og:image" content="https://microdynamics-1256406063.cos.ap-shanghai.myqcloud.com/breeze/embedded/breeze_attitude_flowchart.png">
+<meta property="og:image" content="https://microdynamics-1256406063.cos.ap-shanghai.myqcloud.com/breeze/embedded/breeze_pid.png">
+<meta property="og:image" content="https://microdynamics-1256406063.cos.ap-shanghai.myqcloud.com/breeze/embedded/breeze_pid_loop_angle.png">
+<meta property="og:image" content="https://microdynamics-1256406063.cos.ap-shanghai.myqcloud.com/breeze/embedded/breeze_pid_loop_cascade.png">
+<meta property="og:image" content="https://microdynamics-1256406063.cos.ap-shanghai.myqcloud.com/breeze/embedded/breeze_pid_loop_height.png">
+<meta property="article:published_time" content="2020-04-20T04:43:42.586Z">
+<meta property="article:modified_time" content="2020-04-20T04:43:43.092Z">
 <meta property="article:author" content="若枫">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://microdynamics-1256406063.cos.ap-shanghai.myqcloud.com/breeze/embedded/flight_control_dji.jpg">
   
     <link rel="alternative" href="/atom.xml" title="Hexo" type="application/atom+xml">
   
@@ -179,96 +216,14 @@
           </div>
           <div id="js-content" class="content-ll">
             
-  
-    <article id="post-传感器" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+<article id="post-飞控原理" class="article article-type-post " itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
         
   
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/04/20/%E4%BC%A0%E6%84%9F%E5%99%A8/">传感器</a>
-    </h1>
-  
-
-        
-        <a href="/2020/04/20/%E4%BC%A0%E6%84%9F%E5%99%A8/" class="archive-article-date">
-  	<time datetime="2020-04-20T06:25:10.513Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-20</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="传感器"><a href="#传感器" class="headerlink" title="传感器"></a>传感器</h1><h2 id="陀螺仪"><a href="#陀螺仪" class="headerlink" title="陀螺仪"></a>陀螺仪</h2><p>通过陀螺仪测出的没有欧拉角，只有角速度，那么如何将角速度和欧拉角联系在一起呢？<br>这实际上就是一个积分与微分的关系。目前共有以下几种方法：</p>
-<ul>
-<li>欧拉角微分方程。（包含大量三角运算，对计算机要求较高）</li>
-<li>方向余弦矩阵微分方程。（包含大量三角运算）</li>
-<li>四元数微分方程。（物理意义不是很明确，对计算机性能要求较低，但是可以避免三角运算）</li>
-<li>旋转适量微分方程。（也包含一些三角运算）</li>
-</ul>
-<p>单片机的计算能力不是很强，所以在要求精度不是很高的情况下可以采用四元数法。<br>四元数的微分方程形式为：</p>
-<script type="math/tex; mode=display">\begin{bmatrix}\dot a\\\dot b\\\dot c\\\dot d\end{bmatrix}=\frac{1}{2}\begin{bmatrix}0&-\omega_x&-\omega_y&-\omega_z\\\omega_x&0&\omega_z&-\omega_y\\\omega_y&-\omega_z&0&-\omega_x\\\omega_z&\omega_y&-\omega_x&0\end{bmatrix}\begin{bmatrix} a\\b\\c\\d\end{bmatrix}\\</script><p>可以简化为：</p>
-<script type="math/tex; mode=display">\dot q=\frac{1}{2}[\Omega]q</script><p>然后对上式进行积分，详细过程这里不做推倒，这里这里只给出最终的积分结果，写成矩阵形式为：</p>
-<script type="math/tex; mode=display">\begin{bmatrix}a\\b\\c\\ d\end{bmatrix}_{t_k}=[A]\begin{bmatrix}a\\b\\c\\ d\end{bmatrix}_{t_{k-1}}</script><p>这样我们就得到了每时每刻的四元数的值，前面的a,b,c,d分别代表$q_0,q_1,q_2,q_3$<br>坐标转换矩阵$C_n^b$可以用三个欧拉角以及四元数表示出来，这是已知的公式，由于我们已经知道了每时每刻的四元数的值，这样我们就可以推导出任何时刻的欧拉角了。</p>
-<script type="math/tex; mode=display">\phi=arctan2(2(q_2q_3+q_0q_1),1-2(q_1^2+q_2^2))</script><script type="math/tex; mode=display">\theta=-arcsin(2(a_1q_3-q_0q_2))</script><script type="math/tex; mode=display">\psi=arctan2(2(q_1q_2+q_0q_3),1-2(q_2^2+q_3^2)),</script><h2 id="加速度计"><a href="#加速度计" class="headerlink" title="加速度计"></a>加速度计</h2><p>在之前的公式中，我们用的角速度的数据是直接从陀螺仪里输出来的，这样解算出来的欧拉角会随时间慢慢往一个方向漂移，为了抑制这种漂移，需要加速度计对陀螺仪数据进行适当修正，把修正后的角速度带入之前的公式中，这里Pith和Roll轴的漂移就会得到抑制。<br>加速度计在静止的时候输出的只有重力。将大地坐标系下的单位向量$（0,0,1）$投影到机体坐标系中，为$(v_x,v_y,v_z)$</p>
-<script type="math/tex; mode=display">\begin{bmatrix}V_x\\V_y\\V_z\end{bmatrix}=C_n^b\begin{bmatrix}0\\0\\1\end{bmatrix}=\begin{bmatrix}2(q_1q_3-q_0q_2)\\2(q_2q_3+q_0q_1)\\1-2(q_1^2+q_2^2)\end{bmatrix}</script><p>且满足：</p>
-<script type="math/tex; mode=display">q_0^2+q_1^2+q_2^2+q_3^2=1</script><p>将其归一化处理：</p>
-<script type="math/tex; mode=display">norm=sqrt(q_0^2+q_1^2+q_2^2+q_3^2)</script><script type="math/tex; mode=display">q_0=q_0/norm</script><script type="math/tex; mode=display">q_1=q_1/norm</script><script type="math/tex; mode=display">q_2=q_2/norm</script><script type="math/tex; mode=display">q_3=q_3/norm</script><p>$(V_x,V_y,V_z)$是通过陀螺仪测出的角速度得到了四算数，在通过向机体坐标系投影计算得到的，然而通过加速度计测量的三轴加速度和这个计算的结果是有误差的（因为漂移），设加速度计测出的三轴加速度为$(a_x,a_y,a_z)$,同理，先将加速度计进行归一化处理：</p>
-<script type="math/tex; mode=display">norm=sqrt(a_x^2+a_y^2+a_z^2)</script><script type="math/tex; mode=display">a_x=a_x/norm</script><script type="math/tex; mode=display">a_y=a_y/norm</script><script type="math/tex; mode=display">a_z=a_z/norm</script><p>接下来计算误差：</p>
-<script type="math/tex; mode=display">\begin{bmatrix}e_x\\e_y\\e_z\end{bmatrix}=\begin{bmatrix}a_x\\a_y\\a_z\end{bmatrix}\times \begin{bmatrix}a_x\\a_y\\a_z\end{bmatrix}=\begin{bmatrix}a_yv_z-a_zv_y\\a_zv_x-a_xv_z\\a_xv_y-a_yv_x\end{bmatrix}</script><p>然后对误差就行PI计算得到矫正后的三轴角速度，再代入微分计算。</p>
-<p>但是融合了加速度计的数据后，$\text{\red{只能抑制Pith轴和Roll轴的漂移}}$。因为Yaw轴的数据发生漂移在加速度计上不会显现出来，因为在一个平面内无论飞机怎么转对其加速度没有影响，因此无法抑制其漂移。为了减缓这种飘移，解算程序中同时计算了没有融合加速度计的一组欧拉角取其Yaw轴的角度作为最终航向角。</p>
-<h2 id="加速度计的滤波"><a href="#加速度计的滤波" class="headerlink" title="加速度计的滤波"></a>加速度计的滤波</h2><p>加速度计是一个对机械振动特别敏感的原件，飞机在飞行过程中，机身受电机的影响会产生剧烈的<strong>高频振动</strong>，这种振动的频率比飞机自身姿态变化引起的加速度计的变化的频率要高很多，前者我们不需要，后者我们要保留，因此我们要对加速度计的原始输出做<strong>低通滤波</strong>，最简单的低通滤波是<strong>滑动平均滤波</strong>。</p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2020/04/20/%E4%BC%A0%E6%84%9F%E5%99%A8/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-飞控原理" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/04/20/%E9%A3%9E%E6%8E%A7%E5%8E%9F%E7%90%86/">飞控原理</a>
+    <h1 class="article-title" itemprop="name">
+      飞控原理
     </h1>
   
 
@@ -1363,6 +1318,32 @@ y(n) = 0.131106439 \cdot x(n) + 0.262212879 \cdot x(n-1) + 0.131106439 \cdot x(n
       
 
       
+        <div class="page-reward">
+          <a href="javascript:;" class="page-reward-btn tooltip-top">
+            <div class="tooltip tooltip-east">
+            <span class="tooltip-item">
+              赏
+            </span>
+            <span class="tooltip-content">
+              <span class="tooltip-text">
+                <span class="tooltip-inner">
+                  <p class="reward-p"><i class="icon icon-quo-left"></i>谢谢你请我吃糖果<i class="icon icon-quo-right"></i></p>
+                  <div class="reward-box">
+                    
+                    
+                    <div class="reward-box-item">
+                      <img class="reward-img" src="/assets/wechatpay.jpg">
+                      <span class="reward-type">微信</span>
+                    </div>
+                    
+                  </div>
+                </span>
+              </span>
+            </span>
+          </div>
+          </a>
+        </div>
+      
     </div>
     <div class="article-info article-info-index">
       
@@ -1370,16 +1351,84 @@ y(n) = 0.131106439 \cdot x(n) + 0.262212879 \cdot x(n-1) + 0.131106439 \cdot x(n
       
 
       
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2020/04/20/%E9%A3%9E%E6%8E%A7%E5%8E%9F%E7%90%86/">展开全文 >></a>
-        </p>
-      
 
+      
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
+        </div>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//api.qrserver.com/v1/create-qr-code/?size=150x150&data=sundexin111.github.io2020/04/20/%E9%A3%9E%E6%8E%A7%E5%8E%9F%E7%90%86/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
       
       <div class="clearfix"></div>
     </div>
   </div>
 </article>
+
+  
+<nav id="article-nav">
+  
+    <a href="/2020/04/20/%E4%BC%A0%E6%84%9F%E5%99%A8/" id="article-nav-newer" class="article-nav-link-wrap">
+      <i class="icon-circle-left"></i>
+      <div class="article-nav-title">
+        
+          传感器
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2020/04/20/asbQuadcopter%E7%8A%B6%E6%80%81%E4%BC%B0%E8%AE%A1%E5%99%A8/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">asbQuadcopter状态估计器</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
 
 <aside class="wrap-side-operation">
     <div class="mod-side-operation">
@@ -1394,628 +1443,32 @@ y(n) = 0.131106439 \cdot x(n) + 0.262212879 \cdot x(n-1) + 0.131106439 \cdot x(n
         </div>
         
         
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-asbQuadcopter状态估计器" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/04/20/asbQuadcopter%E7%8A%B6%E6%80%81%E4%BC%B0%E8%AE%A1%E5%99%A8/">asbQuadcopter状态估计器</a>
-    </h1>
-  
-
-        
-        <a href="/2020/04/20/asbQuadcopter%E7%8A%B6%E6%80%81%E4%BC%B0%E8%AE%A1%E5%99%A8/" class="archive-article-date">
-  	<time datetime="2020-04-20T02:23:58.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-20</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>以asbQuadcopter为基础，研究其状态估计部分。首先看一下其simulink模型。<br>
-        
-          <a class="article-more-a" href="/2020/04/20/asbQuadcopter%E7%8A%B6%E6%80%81%E4%BC%B0%E8%AE%A1%E5%99%A8/#more">more >></a>
-        
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">APM</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2020/04/20/asbQuadcopter%E7%8A%B6%E6%80%81%E4%BC%B0%E8%AE%A1%E5%99%A8/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
+        <div class="toc-container tooltip-left">
+            <i class="icon-font icon-category"></i>
+            <div class="tooltip tooltip-east">
+                <span class="tooltip-item">
+                </span>
+                <span class="tooltip-content">
+                    <div class="toc-article">
+                    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#"><span class="toc-number">1.</span> <span class="toc-text">9.1 飞控算法理论与设计</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#_1"><span class="toc-number">1.1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#_2"><span class="toc-number">1.2.</span> <span class="toc-text">研究现状</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1"><span class="toc-number">1.2.1.</span> <span class="toc-text">1. 国内研究现状</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2"><span class="toc-number">1.2.2.</span> <span class="toc-text">2. 国外研究现状</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#_3"><span class="toc-number">1.3.</span> <span class="toc-text">基础知识</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1_1"><span class="toc-number">1.3.1.</span> <span class="toc-text">1. 基本结构及飞行原理</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1_2"><span class="toc-number">1.3.1.1.</span> <span class="toc-text">1. 坐标系定义</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2_1"><span class="toc-number">1.3.1.2.</span> <span class="toc-text">2. 电机布局</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3"><span class="toc-number">1.3.1.3.</span> <span class="toc-text">3. 动力学原理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4"><span class="toc-number">1.3.1.4.</span> <span class="toc-text">4. 飞行模式</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2_2"><span class="toc-number">1.3.2.</span> <span class="toc-text">2. 飞行姿态表示方法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1_3"><span class="toc-number">1.3.2.1.</span> <span class="toc-text">1. 欧拉角法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2_3"><span class="toc-number">1.3.2.2.</span> <span class="toc-text">2. 四元数法</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3_1"><span class="toc-number">1.3.3.</span> <span class="toc-text">3. 动力学模型建立方法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1_4"><span class="toc-number">1.3.3.1.</span> <span class="toc-text">1. 机理建模法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2_4"><span class="toc-number">1.3.3.2.</span> <span class="toc-text">2. 辨识建模法</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#_4"><span class="toc-number">1.4.</span> <span class="toc-text">姿态信号分析</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1_5"><span class="toc-number">1.4.0.1.</span> <span class="toc-text">1. 陀螺仪信号分析</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2_5"><span class="toc-number">1.4.1.</span> <span class="toc-text">2. 加速度计信号分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#_5"><span class="toc-number">1.5.</span> <span class="toc-text">姿态数据滤波</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1_6"><span class="toc-number">1.5.1.</span> <span class="toc-text">1. 数字滤波器设计</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-iir"><span class="toc-number">1.5.1.1.</span> <span class="toc-text">1. 常用数字滤波器与IIR滤波器简介</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-matlabiir"><span class="toc-number">1.5.1.2.</span> <span class="toc-text">2. 使用Matlab辅助设计IIR滤波器</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2_6"><span class="toc-number">1.5.2.</span> <span class="toc-text">2. 数字滤波器性能测试</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#_6"><span class="toc-number">1.6.</span> <span class="toc-text">姿态解算</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1_7"><span class="toc-number">1.6.1.</span> <span class="toc-text">1. 互补滤波</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2_7"><span class="toc-number">1.6.2.</span> <span class="toc-text">2. 卡尔曼滤波</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3_2"><span class="toc-number">1.6.3.</span> <span class="toc-text">3. 四元数引入</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#_7"><span class="toc-number">1.7.</span> <span class="toc-text">最小二乘辨识得到系统动力学模型(被控对象)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1_8"><span class="toc-number">1.7.1.</span> <span class="toc-text">1. 辨识目的和先验知识</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2_8"><span class="toc-number">1.7.2.</span> <span class="toc-text">2. 实验设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3_3"><span class="toc-number">1.7.3.</span> <span class="toc-text">3. 模型结构辨识</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4_1"><span class="toc-number">1.7.4.</span> <span class="toc-text">4. 模型参数辨识</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#pid"><span class="toc-number">1.8.</span> <span class="toc-text">串联PID控制算法设计与整定</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-matlab"><span class="toc-number">1.8.1.</span> <span class="toc-text">1. Matlab仿真</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2_9"><span class="toc-number">1.8.2.</span> <span class="toc-text">2. 真机调试</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#pid_1"><span class="toc-number">1.9.</span> <span class="toc-text">高度串联PID控制算法与整定</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-matlab_1"><span class="toc-number">1.9.1.</span> <span class="toc-text">1. Matlab仿真</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2_10"><span class="toc-number">1.9.2.</span> <span class="toc-text">2. 真机调试</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#_8"><span class="toc-number">1.10.</span> <span class="toc-text">总体调试与经验总结</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#_9"><span class="toc-number">1.10.1.</span> <span class="toc-text">算法讲解</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#_10"><span class="toc-number">1.10.1.1.</span> <span class="toc-text">姿态解算算法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#_11"><span class="toc-number">1.10.1.2.</span> <span class="toc-text">姿态控制算法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#_12"><span class="toc-number">1.10.1.3.</span> <span class="toc-text">自主悬停</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#_13"><span class="toc-number">1.11.</span> <span class="toc-text">总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#_14"><span class="toc-number">1.12.</span> <span class="toc-text">参考</span></a></li></ol></li></ol>
+                    </div>
+                </span>
             </div>
         </div>
         
-        
     </div>
 </aside>
 
 
 
-
-  
-    <article id="post-感知机学习方法" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/04/19/%E6%84%9F%E7%9F%A5%E6%9C%BA%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/">感知机学习方法</a>
-    </h1>
-  
-
-        
-        <a href="/2020/04/19/%E6%84%9F%E7%9F%A5%E6%9C%BA%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/" class="archive-article-date">
-  	<time datetime="2020-04-19T04:21:16.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-19</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="1-学习规则"><a href="#1-学习规则" class="headerlink" title="1 学习规则"></a>1 学习规则</h1><p>学习规则是指修改网络权值和偏置值的方法和过程，也称为训练算法。学习规则是为了训练网络来完成某些任务。学习规则可以归纳为三大类：有监督学习、无监督学习和增强（评分）学习。<br>
-        
-          <a class="article-more-a" href="/2020/04/19/%E6%84%9F%E7%9F%A5%E6%9C%BA%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/#more">more >></a>
-        
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">神经网络</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2020/04/19/%E6%84%9F%E7%9F%A5%E6%9C%BA%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-Quadcopter控制" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/04/15/Quadcopter%E6%8E%A7%E5%88%B6/">Quadcopter控制</a>
-    </h1>
-  
-
-        
-        <a href="/2020/04/15/Quadcopter%E6%8E%A7%E5%88%B6/" class="archive-article-date">
-  	<time datetime="2020-04-15T07:50:15.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-15</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="1-问题描述"><a href="#1-问题描述" class="headerlink" title="1 问题描述"></a>1 问题描述</h1><p>四旋翼飞行器对角线上的两个电机旋转方向相同，另一对与之旋转方向相反。这是使推力，滚转，俯仰，偏航相互独立控制的必要条件。这可以使我们命令其中的一个动作而不影响其他动作。<br>
-        
-          <a class="article-more-a" href="/2020/04/15/Quadcopter%E6%8E%A7%E5%88%B6/#more">more >></a>
-        
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">APM</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2020/04/15/Quadcopter%E6%8E%A7%E5%88%B6/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-神经网络设计-实例" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/04/13/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E8%AE%BE%E8%AE%A1-%E5%AE%9E%E4%BE%8B/">神经网络设计-实例</a>
-    </h1>
-  
-
-        
-        <a href="/2020/04/13/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E8%AE%BE%E8%AE%A1-%E5%AE%9E%E4%BE%8B/" class="archive-article-date">
-  	<time datetime="2020-04-13T06:11:54.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-13</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h1><p>水果分类问题：</p>
-<p>有一台能够根据种类把水果进行分类的机器，机器的传送带上装有传感器，这些传感器可以检测到水果的三种特征：形状、纹理、重量。<br>
-        
-          <a class="article-more-a" href="/2020/04/13/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E8%AE%BE%E8%AE%A1-%E5%AE%9E%E4%BE%8B/#more">more >></a>
-        
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">神经网络</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2020/04/13/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E8%AE%BE%E8%AE%A1-%E5%AE%9E%E4%BE%8B/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-win10解决未安装任何音频输出设备" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/04/08/win10%E8%A7%A3%E5%86%B3%E6%9C%AA%E5%AE%89%E8%A3%85%E4%BB%BB%E4%BD%95%E9%9F%B3%E9%A2%91%E8%BE%93%E5%87%BA%E8%AE%BE%E5%A4%87/">win10解决未安装任何音频输出设备</a>
-    </h1>
-  
-
-        
-        <a href="/2020/04/08/win10%E8%A7%A3%E5%86%B3%E6%9C%AA%E5%AE%89%E8%A3%85%E4%BB%BB%E4%BD%95%E9%9F%B3%E9%A2%91%E8%BE%93%E5%87%BA%E8%AE%BE%E5%A4%87/" class="archive-article-date">
-  	<time datetime="2020-04-08T09:44:47.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-08</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>最近刚刚更新了一下win10系统，开始啥问题没有，晚上睡觉关机后，第二天开机，小喇叭处有一个红叉，显示未安装任何音频输出设备。查看了微软的官网以及百度了很多解决方法，电脑重启了n遍还是没有解决，一度接近崩溃，我都怀疑我的声卡坏了，但是由于我电脑有两个系统，另一个系统是有声音的，所以确定硬件没换，还是软件的问题。<br>
-        
-          <a class="article-more-a" href="/2020/04/08/win10%E8%A7%A3%E5%86%B3%E6%9C%AA%E5%AE%89%E8%A3%85%E4%BB%BB%E4%BD%95%E9%9F%B3%E9%A2%91%E8%BE%93%E5%87%BA%E8%AE%BE%E5%A4%87/#more">more >></a>
-        
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">计算机系统</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2020/04/08/win10%E8%A7%A3%E5%86%B3%E6%9C%AA%E5%AE%89%E8%A3%85%E4%BB%BB%E4%BD%95%E9%9F%B3%E9%A2%91%E8%BE%93%E5%87%BA%E8%AE%BE%E5%A4%87/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-扩展卡尔曼滤波器" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/04/06/%E6%89%A9%E5%B1%95%E5%8D%A1%E5%B0%94%E6%9B%BC%E6%BB%A4%E6%B3%A2%E5%99%A8/">扩展卡尔曼滤波器</a>
-    </h1>
-  
-
-        
-        <a href="/2020/04/06/%E6%89%A9%E5%B1%95%E5%8D%A1%E5%B0%94%E6%9B%BC%E6%BB%A4%E6%B3%A2%E5%99%A8/" class="archive-article-date">
-  	<time datetime="2020-04-06T13:54:34.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-06</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="1线性系统与非线性系统"><a href="#1线性系统与非线性系统" class="headerlink" title="1线性系统与非线性系统"></a>1线性系统与非线性系统</h1><ul>
-<li>线性系统：状态变量和输出变量对于所有可能的输入变量和初始状态都满足叠加原理的系统。一个由线性元部件所组成的系统必是线性系统。但是，相反的命题在某些情况下可能不成立。线性系统的状态变量(或输出变量)与输入变量间的因果关系可用一组线性微分方程或差分方程来描述，这种方程称为系统的数学模型。</li>
-<li>非线性系统：一个系统，如果其输出不与其输入成正比，则它是非线性的。从数学上看，非线性系统的特征是叠加原理不再成立。叠加原理是指描述系统的方程的两个解之和仍为其解。叠加原理可以通过两种方式失效。其一，方程本身是非线性的。其二，方程本身虽然是线性的，但边界是未知的或运动的。
-        
-          <a class="article-more-a" href="/2020/04/06/%E6%89%A9%E5%B1%95%E5%8D%A1%E5%B0%94%E6%9B%BC%E6%BB%A4%E6%B3%A2%E5%99%A8/#more">more >></a>
-        
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">APM</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2020/04/06/%E6%89%A9%E5%B1%95%E5%8D%A1%E5%B0%94%E6%9B%BC%E6%BB%A4%E6%B3%A2%E5%99%A8/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-卡尔曼滤波器" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/04/01/%E5%8D%A1%E5%B0%94%E6%9B%BC%E6%BB%A4%E6%B3%A2%E5%99%A8/">卡尔曼滤波器</a>
-    </h1>
-  
-
-        
-        <a href="/2020/04/01/%E5%8D%A1%E5%B0%94%E6%9B%BC%E6%BB%A4%E6%B3%A2%E5%99%A8/" class="archive-article-date">
-  	<time datetime="2020-04-01T05:44:31.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-01</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="1-什么是卡尔曼滤波"><a href="#1-什么是卡尔曼滤波" class="headerlink" title="1 什么是卡尔曼滤波"></a>1 什么是卡尔曼滤波</h1><p>最近在阅读APM的源码，督导了姿态解算的部分，了解到姿态结算是依靠卡尔曼扩展滤波器（EKF）解算出位置的。然后笔者就去了解了卡尔曼滤波的相关知识。笔者的简单理解就是卡尔曼滤波就是计算出从你当前的位置到达目标位置的最优算法。比如说一个四旋翼无人机，你想让他从当前位置飞到100m外的目标地点（固定的），我们简单的认为只需要导航就可以了啊，但是实际情况下导航在引导无人机从当前位置到目标位置的过程中，会遇到很多噪<br>音，这样可能会使无人机偏离目标地点。有人说可以依靠数学模型计算出目标位置，但实际情况中有很多例子很难建出具体的数学模型，就算能建出具体的模型，但是在迭代的过程中有误差的话，会使这个误差越来越大，偏离目标地点。所以这就引出了卡尔曼滤波，它会结合传感器的测量值与数学模型的估算值得到最优估算状态。然后区分一下卡尔曼滤波和扩展卡尔曼滤波的区别，卡尔曼滤波主要用在线性系统中，扩展卡尔曼滤波主要用在非线性系统中（在APM姿态解算中主要用到扩展卡尔曼滤波（EKF））。本文将用最简单的例子介绍一下卡尔曼滤波器。<br>
-        
-          <a class="article-more-a" href="/2020/04/01/%E5%8D%A1%E5%B0%94%E6%9B%BC%E6%BB%A4%E6%B3%A2%E5%99%A8/#more">more >></a>
-        
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">APM</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2020/04/01/%E5%8D%A1%E5%B0%94%E6%9B%BC%E6%BB%A4%E6%B3%A2%E5%99%A8/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-数据结构——栈" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/03/30/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E2%80%94%E2%80%94%E6%A0%88/">数据结构——栈</a>
-    </h1>
-  
-
-        
-        <a href="/2020/03/30/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E2%80%94%E2%80%94%E6%A0%88/" class="archive-article-date">
-  	<time datetime="2020-03-30T04:16:12.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-03-30</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="1-栈的定义"><a href="#1-栈的定义" class="headerlink" title="1 栈的定义"></a>1 栈的定义</h1><p>栈是一种数据结构，类似于枪的弹夹安装子弹，先安装的子弹最后弹出，后安装的子弹先弹出。<br>
-        
-          <a class="article-more-a" href="/2020/03/30/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E2%80%94%E2%80%94%E6%A0%88/#more">more >></a>
-        
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">数据结构</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2020/03/30/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E2%80%94%E2%80%94%E6%A0%88/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
   
   
-    <nav id="page-nav">
-      <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/">Next &amp;raquo;</a>
-    </nav>
+  
+
+  
+
+  
+
   
 
 
@@ -2041,8 +1494,8 @@ y(n) = 0.131106439 \cdot x(n) + 0.262212879 \cdot x(n-1) + 0.131106439 \cdot x(n
     <script>
 	var yiliaConfig = {
 		mathjax: true,
-		isHome: true,
-		isPost: false,
+		isHome: false,
+		isPost: true,
 		isArchive: false,
 		isTag: false,
 		isCategory: false,
