@@ -6,15 +6,126 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>Archives: 2020 | Hexo</title>
+  <title>有监督的Hebb学习 | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Hexo">
-<meta property="og:url" content="http://yoursite.com/archives/2020/page/2/index.html">
+  <meta name="description" content="本章介绍Hebb学习的规则，并展示了如何用Hebb规则训练神经网络，解决模式识别问题。 文章转载于：https:&#x2F;&#x2F;zhuanlan.zhihu.com&#x2F;p&#x2F;67561988">
+<meta property="og:type" content="article">
+<meta property="og:title" content="有监督的Hebb学习">
+<meta property="og:url" content="http://yoursite.com/2020/04/21/%E6%9C%89%E7%9B%91%E7%9D%A3%E7%9A%84Hebb%E5%AD%A6%E4%B9%A0/index.html">
 <meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="本章介绍Hebb学习的规则，并展示了如何用Hebb规则训练神经网络，解决模式识别问题。 文章转载于：https:&#x2F;&#x2F;zhuanlan.zhihu.com&#x2F;p&#x2F;67561988">
 <meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://pic3.zhimg.com/v2-7408b0e9f9e999febe126c50779ba276_b.png">
+<meta property="og:image" content="https://pic3.zhimg.com/80/v2-7408b0e9f9e999febe126c50779ba276_720w.png">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=a_i%253D%5Csum_%7Bj%253D1%7D%5ER%7Bw_%7Bij%7D%7Dp_j++">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=%5Cleft%5C%7B%5Cmathbf%7Bp%7D_%7B1%7D%252C+%5Cmathbf%7Bt%7D_%7B1%7D%5Cright%5C%7D%252C%5Cleft%5C%7B%5Cmathbf%7Bp%7D_%7B2%7D%252C+%5Cmathbf%7Bt%7D_%7B2%7D%5Cright%5C%7D%252C+%5Cdots%252C%5Cleft%5C%7B%5Cmathbf%7Bp%7D_%7BQ%7D%252C+%5Cmathbf%7Bt%7D_%7BQ%7D%5Cright%5C%7D">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=q%253D1%252C2%252C+%5Cdots%252C+Q">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=%5Cmathbf%7Bp%7D%253D%5Cmathbf%7Bp%7D_%7Bq%7D">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=a%253Dt_%7Bq%7D">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=%5Cmathbf%7Bp%7D%253D%5Cmathbf%7Bp%7D_%7Bq%7D%252B%5Cdelta">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=%5Cmathbf%7Ba%7D%253D%5Cmathbf%7Bt%7D_%7Bg%7D%252B%5Cvarepsilon">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=p_j">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=a_i">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=w_%7Bij%7D">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=p_j">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=a_i">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=w_%7Bij%7D">
+<meta property="og:image" content="https://pic1.zhimg.com/v2-223f71825f8dadda4c91f6e400de8040_b.jpg">
+<meta property="og:image" content="https://pic1.zhimg.com/80/v2-223f71825f8dadda4c91f6e400de8040_720w.jpg">
+<meta property="og:image" content="https://pic1.zhimg.com/v2-2ddb97a54e75e21e16860ef33a27098c_b.png">
+<meta property="og:image" content="https://pic1.zhimg.com/80/v2-2ddb97a54e75e21e16860ef33a27098c_720w.png">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=p_j">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=a_i">
+<meta property="og:image" content="https://pic3.zhimg.com/v2-d7579605d303a5a39418863552a0174e_b.png">
+<meta property="og:image" content="https://pic3.zhimg.com/80/v2-d7579605d303a5a39418863552a0174e_720w.png">
+<meta property="og:image" content="https://pic1.zhimg.com/v2-805cec638bb1621234775789ebb51e9c_b.png">
+<meta property="og:image" content="https://pic1.zhimg.com/80/v2-805cec638bb1621234775789ebb51e9c_720w.png">
+<meta property="og:image" content="https://pic3.zhimg.com/v2-8a3eff82de8cef8f8be0c422803272aa_b.jpg">
+<meta property="og:image" content="https://pic3.zhimg.com/80/v2-8a3eff82de8cef8f8be0c422803272aa_720w.jpg">
+<meta property="og:image" content="https://pic3.zhimg.com/v2-98906ca0133150c338c06cbdb16db24e_b.jpg">
+<meta property="og:image" content="https://pic3.zhimg.com/80/v2-98906ca0133150c338c06cbdb16db24e_720w.jpg">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=p_q">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=p_k">
+<meta property="og:image" content="https://pic1.zhimg.com/v2-ccf4f7ce41a6fc69b8ae8b234f34424c_b.jpg">
+<meta property="og:image" content="https://pic1.zhimg.com/80/v2-ccf4f7ce41a6fc69b8ae8b234f34424c_720w.jpg">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=%5Cleft(%5Cmathbf%7Bp%7D_%7Bq%7D%5E%7BT%7D+%5Cmathbf%7Bp%7D_%7Bk%7D%5Cright)%253D%5Cleft%5C%7B%5Cbegin%7Barray%7D%7Bll%7D%7B1%7D+%2526+%7Bq%253Dk%7D+%5C%5C+%7B0%7D+%2526+%7Bq+%5Cneq+k%7D%5Cend%7Barray%7D%5Cright.">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=%5Cmathbf%7Ba%7D%253D%5Cmathbf%7BW%7D+%5Cmathbf%7Bp%7D_%7Bk%7D%253D%5Cmathbf%7Bt%7D_%7Bk%7D">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=p_q">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=p_k">
+<meta property="og:image" content="https://pic1.zhimg.com/v2-1e03a54546b705c60404e50a74d06670_b.png">
+<meta property="og:image" content="https://pic1.zhimg.com/80/v2-1e03a54546b705c60404e50a74d06670_720w.png">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=%5Csum_%7Bq%253D1+%5Catop+q+%5Cneq+k%7D%5E%7BQ%7D+%5Cmathrm%7Bt%7D_%7Bq%7D%5Cleft(%5Cmathbf%7Bp%7D_%7Bq%7D%5E%7BT%7D+%5Cmathbf%7Bp%7D_%7Bk%7D%5Cright)">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=p_q">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=t_q">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=%5Cmathbf%7BW%7D+%5Cmathbf%7Bp%7D_%7Bq%7D%253D%5Cmathbf%7Bt%7D_%7Bq%7D+%5Cquad+q%253D1%252C2%252C+%5Cdots%252C+Q">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=F(%5Cmathbf%7BW%7D)%253D%5Csum_%7Bq%253D1%7D%5E%7BQ%7D%5Cleft%5C%7C%5Cmathbf%7Bt%7D_%7Bq%7D-%5Cmathbf%7BW%7D+%5Cmathbf%7Bp%7D_%7Bq%7D%5Cright%5C%7C%5E%7B2%7D">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=%5Cmathbf%7BW%7D_%7B%5Cmathbf%7Bp%7D_%7Bq%7D%7D%253D%5Cmathbf%7Bt%7D_%7Bq%7D+%5Cquad+q%253D1%252C2%252C+%5Cldots%252C+Q">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=%5Cmathbf%7BW%7D+%5Cmathbf%7BP%7D%253D%5Cmathbf%7BT%7D">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=%5Cmathbf%7BT%7D%253D%5Cleft%5B+%5Cbegin%7Barray%7D%7Bllll%7D%7B%5Cmathbf%7Bt%7D_%7B1%7D%7D+%2526+%7B%5Cmathbf%7Bt%7D_%7B2%7D%7D+%2526+%7B%5Cldots%7D+%2526+%7B%5Cmathbf%7Bt%7D_%7BQ%7D%7D%5Cend%7Barray%7D%5Cright%5D">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=%5Cmathbf%7BP%7D%253D%5Cleft%5B+%5Cbegin%7Barray%7D%7Blll%7D%7B%5Cmathbf%7Bp%7D_%7B1%7D%7D+%2526+%7B%5Cmathbf%7Bp%7D_%7B2%7D+%5Cldots%7D+%2526+%7B%5Cmathbf%7Bp%7D_%7BQ%7D%7D%5Cend%7Barray%7D%5Cright%5D">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=F(%5Cmathbf%7BW%7D)%253D%5C%7C%5Cmathbf%7BT%7D-%5Cmathbf%7BW%7D+%5Cmathbf%7BP%7D%5C%7C%5E%7B2%7D%253D%5C%7C%5Cmathbf%7BE%7D%5C%7C%5E%7B2%7D">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=%5Cmathbf%7BE%7D%253D%5Cmathbf%7BT%7D-%5Cmathbf%7BW%7D+%5Cmathbf%7BP%7D">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=%7C%7C+%5Cmathbf%7BE%7D+%5C%7C%5E%7B2%7D%253D%5Csum_%7Bi%7D+%5Csum_%7Bj%7D+e_%7Bi+j%7D%5E%7B2%7D">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=%5Cmathbf%7BW+P%7D%253D%5Cmathbf%7BT%7D">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=F(%5Cmathbf%7BW%7D)">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=%5Cmathbf%7BW%7D%253D%5Cmathbf%7BT%7D+%5Cmathbf%7BP%7D%5E%7B-1%7D">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=%5Cmathbf%7BW%7D%253D%5Cmathbf%7BT%7D+%5Cmathbf%7BP%7D%5E%7B%252B%7D">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=%5Cmathbf%7BP%7D%5E%7B%252B%7D">
+<meta property="og:image" content="https://pic4.zhimg.com/v2-01592d6856913806862f7ff68265bb23_b.png">
+<meta property="og:image" content="https://pic4.zhimg.com/80/v2-01592d6856913806862f7ff68265bb23_720w.png">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=%5Cmathbf%7BP%7D">
+<meta property="og:image" content="https://pic1.zhimg.com/v2-50a3c681e4338ec28b3bc026e89fdd74_b.png">
+<meta property="og:image" content="https://pic1.zhimg.com/80/v2-50a3c681e4338ec28b3bc026e89fdd74_720w.png">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=%5Cmathbf%7BW%7D%253D%5Cmathbf%7BT%7D+%5Cmathbf%7BP%7D%5E%7B%252B%7D">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=%5Cmathbf%7Bt%7D_%7Bq%7D%253D%5Cmathbf%7Bp%7D_%7Bq%7D">
+<meta property="og:image" content="https://pic4.zhimg.com/v2-ade0350289963b9d8bf10d5907a918ef_b.png">
+<meta property="og:image" content="https://pic4.zhimg.com/80/v2-ade0350289963b9d8bf10d5907a918ef_720w.png">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=%5Cmathbf%7Bp%7D_%7B1%7D%253D%5Cleft%5B+%5Cbegin%7Barray%7D%7Blllllllllll%7D%7B-1%7D+%2526+%7B1%7D+%2526+%7B1%7D+%2526+%7B1%7D+%2526+%7B-1%7D+%2526+%7B1%7D+%2526+%7B-1%7D+%2526+%7B-1%7D+%2526+%7B1%7D+%2526+%7B%5Cdots%7D+%2526+%7B1%7D%5Cend%7Barray%7D%5Cright%5D%5E%7BT%7D">
+<meta property="og:image" content="https://pic4.zhimg.com/v2-7f18a328e230d060fe886ba98d249a1f_b.jpg">
+<meta property="og:image" content="https://pic4.zhimg.com/80/v2-7f18a328e230d060fe886ba98d249a1f_720w.jpg">
+<meta property="og:image" content="https://pic4.zhimg.com/v2-93996586c3fc2fbd8bd2fd6bc869add3_b.png">
+<meta property="og:image" content="https://pic4.zhimg.com/80/v2-93996586c3fc2fbd8bd2fd6bc869add3_720w.png">
+<meta property="og:image" content="https://pic1.zhimg.com/v2-87409db98919f4f910b14ad0e4250a3c_b.png">
+<meta property="og:image" content="https://pic1.zhimg.com/80/v2-87409db98919f4f910b14ad0e4250a3c_720w.png">
+<meta property="og:image" content="https://pic1.zhimg.com/v2-2b11e4846f061cd244da45e9c81818a4_b.png">
+<meta property="og:image" content="https://pic1.zhimg.com/80/v2-2b11e4846f061cd244da45e9c81818a4_720w.png">
+<meta property="og:image" content="https://pic1.zhimg.com/v2-d8db6c289faed63f52f964ee4dd28304_b.png">
+<meta property="og:image" content="https://pic1.zhimg.com/80/v2-d8db6c289faed63f52f964ee4dd28304_720w.png">
+<meta property="og:image" content="https://pic1.zhimg.com/v2-805cec638bb1621234775789ebb51e9c_b.png">
+<meta property="og:image" content="https://pic1.zhimg.com/80/v2-805cec638bb1621234775789ebb51e9c_720w.png">
+<meta property="og:image" content="https://pic2.zhimg.com/v2-07351b3c5ae5b259d0d3712da6d07549_b.png">
+<meta property="og:image" content="https://pic2.zhimg.com/80/v2-07351b3c5ae5b259d0d3712da6d07549_720w.png">
+<meta property="og:image" content="https://pic2.zhimg.com/v2-ed1da97aed798e26577311f0afc0d0e9_b.png">
+<meta property="og:image" content="https://pic2.zhimg.com/80/v2-ed1da97aed798e26577311f0afc0d0e9_720w.png">
+<meta property="og:image" content="https://pic1.zhimg.com/v2-6a54de33c1b9741cd9457e2e7a484f60_b.png">
+<meta property="og:image" content="https://pic1.zhimg.com/80/v2-6a54de33c1b9741cd9457e2e7a484f60_720w.png">
+<meta property="og:image" content="https://pic2.zhimg.com/v2-bc566390be4626714ac6bba59713f869_b.jpg">
+<meta property="og:image" content="https://pic2.zhimg.com/80/v2-bc566390be4626714ac6bba59713f869_720w.jpg">
+<meta property="og:image" content="https://pic2.zhimg.com/v2-fc39396b0414fcd71f3e4495507139b9_b.jpg">
+<meta property="og:image" content="https://pic2.zhimg.com/80/v2-fc39396b0414fcd71f3e4495507139b9_720w.jpg">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=p_1">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=p_1">
+<meta property="og:image" content="https://pic2.zhimg.com/v2-4047e85e1ed334903323ef28361f302d_b.jpg">
+<meta property="og:image" content="https://pic2.zhimg.com/80/v2-4047e85e1ed334903323ef28361f302d_720w.jpg">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=p_1">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=p_2">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=%5Cmathbf%7BW%7D%5E%7Bh%7D+%5Cmathbf%7Bp%7D_%7B1%7D%253D%5Cmathbf%7Bt%7D_%7B1%7D%5Cleft(%5Cmathbf%7Bp%7D_%7B1%7D%5E%7BT%7D+%5Cmathbf%7Bp%7D_%7B1%7D%5Cright)">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=p_1">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=%5Cleft(%5Cmathbf%7Bp%7D_%7B1%7D%5E%7BT%7D+%5Cmathbf%7Bp%7D_%7B1%7D%5Cright)+%5Cneq+1">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=t_1">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=%5Csum_%7Bq%253D1%7D%5E%7B2%7D%5Cleft%5C%7C%5Cmathbf%7Bt%7D_%7Bq%7D-%5Cmathbf%7BW%7D+%5Cmathbf%7Bp%7D_%7Bq%7D%5Cright%5C%7C%5E%7B2%7D">
+<meta property="og:image" content="https://pic2.zhimg.com/v2-5fa92469a9c5208eac60cfb1a4a81515_b.png">
+<meta property="og:image" content="https://pic2.zhimg.com/80/v2-5fa92469a9c5208eac60cfb1a4a81515_720w.png">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=%5Cmathbf%7Bp%7D_%7B1%7D%253D%5Cleft%5B+%5Cbegin%7Barray%7D%7Bc%7D%7B1%7D+%5C%5C+%7B-1%7D+%5C%5C+%7B1%7D+%5C%5C+%7B1%7D%5Cend%7Barray%7D%5Cright%5D+%5Cquad+%5Cmathbf%7Bp%7D_%7B2%7D%253D%5Cleft%5B+%5Cbegin%7Barray%7D%7Bc%7D%7B1%7D+%5C%5C+%7B1%7D+%5C%5C+%7B-1%7D+%5C%5C+%7B1%7D%5Cend%7Barray%7D%5Cright%5D+%5Cquad+%5Cmathbf%7Bp%7D_%7B3%7D%253D%5Cleft%5B+%5Cbegin%7Barray%7D%7Bc%7D%7B-1%7D+%5C%5C+%7B-1%7D+%5C%5C+%7B-1%7D+%5C%5C+%7B1%7D%5Cend%7Barray%7D%5Cright%5D+%5Cquad+%5Cmathbf%7Bp%7D_%7Bt%7D%253D%5Cleft%5B+%5Cbegin%7Barray%7D%7Bc%7D%7B1%7D+%5C%5C+%7B-1%7D+%5C%5C+%7B1%7D+%5C%5C+%7B-1%7D%5Cend%7Barray%7D%5Cright%5D">
+<meta property="og:image" content="https://www.zhihu.com/equation?tex=%5Cmathbf%7Bt%7D_%7B1%7D%253D%5Cleft%5B+%5Cbegin%7Barray%7D%7Bc%7D%7B-1%7D+%5C%5C+%7B-1%7D%5Cend%7Barray%7D%5Cright%5D+%5Cquad+%5Cmathbf%7Bt%7D_%7B2%7D%253D%5Cleft%5B+%5Cbegin%7Barray%7D%7Bc%7D%7B-1%7D+%5C%5C+%7B1%7D%5Cend%7Barray%7D%5Cright%5D+%5Cquad+%5Cmathbf%7Bt%7D_%7B3%7D%253D%5Cleft%5B+%5Cbegin%7Barray%7D%7Bc%7D%7B1%7D+%5C%5C+%7B-1%7D%5Cend%7Barray%7D%5Cright%5D">
+<meta property="og:image" content="https://pic1.zhimg.com/v2-5f67cacea0007cee35bc140f7cc8ec7c_b.jpg">
+<meta property="og:image" content="https://pic1.zhimg.com/80/v2-5f67cacea0007cee35bc140f7cc8ec7c_720w.jpg">
+<meta property="article:published_time" content="2020-04-21T09:58:17.000Z">
+<meta property="article:modified_time" content="2020-04-21T14:24:33.825Z">
 <meta property="article:author" content="若枫">
+<meta property="article:tag" content="神经网络">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://pic3.zhimg.com/v2-7408b0e9f9e999febe126c50779ba276_b.png">
   
     <link rel="alternative" href="/atom.xml" title="Hexo" type="application/atom+xml">
   
@@ -179,176 +290,394 @@
           </div>
           <div id="js-content" class="content-ll">
             
-  
-  
+<article id="post-有监督的Hebb学习" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
     
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      有监督的Hebb学习
+    </h1>
+  
+
+        
+        <a href="/2020/04/21/%E6%9C%89%E7%9B%91%E7%9D%A3%E7%9A%84Hebb%E5%AD%A6%E4%B9%A0/" class="archive-article-date">
+  	<time datetime="2020-04-21T09:58:17.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-21</time>
+</a>
+        
+      </header>
     
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>本章介绍Hebb学习的规则，并展示了如何用Hebb规则训练神经网络，解决模式识别问题。</strong></p>
+<p>文章转载于：<a href="https://zhuanlan.zhihu.com/p/67561988" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/67561988</a><br><a id="more"></a></p>
+<h2 id="有监督的Hebb学习"><a href="#有监督的Hebb学习" class="headerlink" title="有监督的Hebb学习"></a>有监督的Hebb学习</h2><h3 id="生物学中的Hebb学习假说"><a href="#生物学中的Hebb学习假说" class="headerlink" title="生物学中的Hebb学习假说"></a>生物学中的Hebb学习假说</h3><p>巴甫洛夫的条件反射实验：每次给狗喂食前都先响铃，时间一长，狗就会将铃声和食物联系起来。以后如果响铃但是不给食物，狗也会流口水。</p>
+<p>受该实验的启发，Hebb的理论认为在同一时间被激发的神经元间的联系会被强化。比如，铃声响时一个神经元被激发，在同一时间食物的出现会激发附近的另一个神经元，那么这两个神经元间的联系就会强化，从而记住这两个事物之间存在着联系。相反，如果两个神经元总是不能同步激发，那么它们间的联系将会越来越弱。</p>
+<p>其假说描述如下：当神经细胞A的轴突足够接近到能够激发神经细胞B，且反复或持续地刺激细胞B，那么当A或B中一个或者两个细胞将会产生某种增长过程或代谢变化，从而增强细胞A对细胞B的刺激效果。</p>
+<h3 id="线性联想器"><a href="#线性联想器" class="headerlink" title="线性联想器"></a>线性联想器</h3><p><img src="https://pic3.zhimg.com/v2-7408b0e9f9e999febe126c50779ba276_b.png" alt=""></p>
+<p><img src="https://pic3.zhimg.com/80/v2-7408b0e9f9e999febe126c50779ba276_720w.png" alt=""></p>
+<p>Hebb规则适用于多种神经网络，为了便于理解，这里采用线性联想器（如上图）来介绍Hebb学习。</p>
+<p>线性联想器的输出向量<strong>a</strong>由输入向量<strong>p</strong>根据<strong>a=Wp</strong>决定。可记作：<img src="https://www.zhihu.com/equation?tex=a_i%3D%5Csum_%7Bj%3D1%7D%5ER%7Bw_%7Bij%7D%7Dp_j++" alt="[公式]">。</p>
+<p>线性联想器属于联想记忆模型，联想记忆模型用于学习Q个标准输入/输出对向量之间的关系： <img src="https://www.zhihu.com/equation?tex=%5Cleft%5C%7B%5Cmathbf%7Bp%7D_%7B1%7D%2C+%5Cmathbf%7Bt%7D_%7B1%7D%5Cright%5C%7D%2C%5Cleft%5C%7B%5Cmathbf%7Bp%7D_%7B2%7D%2C+%5Cmathbf%7Bt%7D_%7B2%7D%5Cright%5C%7D%2C+%5Cdots%2C%5Cleft%5C%7B%5Cmathbf%7Bp%7D_%7BQ%7D%2C+%5Cmathbf%7Bt%7D_%7BQ%7D%5Cright%5C%7D" alt="[公式]"> 。针对任意 <img src="https://www.zhihu.com/equation?tex=q%3D1%2C2%2C+%5Cdots%2C+Q" alt="[公式]"> ，给定输入 <img src="https://www.zhihu.com/equation?tex=%5Cmathbf%7Bp%7D%3D%5Cmathbf%7Bp%7D_%7Bq%7D" alt="[公式]"> ，网络必然输出<img src="https://www.zhihu.com/equation?tex=a%3Dt_%7Bq%7D" alt="[公式]"> 。此外，如果输入向量发生微小变化（即 <img src="https://www.zhihu.com/equation?tex=%5Cmathbf%7Bp%7D%3D%5Cmathbf%7Bp%7D_%7Bq%7D%2B%5Cdelta" alt="[公式]"> ），那么网络的输出也只会发生轻微的改变（即 <img src="https://www.zhihu.com/equation?tex=%5Cmathbf%7Ba%7D%3D%5Cmathbf%7Bt%7D_%7Bg%7D%2B%5Cvarepsilon" alt="[公式]"> ）</p>
+<h3 id="Hebb规则"><a href="#Hebb规则" class="headerlink" title="Hebb规则"></a>Hebb规则</h3><p><strong>1. Hebb规则</strong></p>
+<p>在Hebb假说中描述了如果突触两侧的两个神经元被同时激活，那么突出的连接强度将会增加。在神经网络中，输入 <img src="https://www.zhihu.com/equation?tex=p_j" alt="[公式]"> 和输出 <img src="https://www.zhihu.com/equation?tex=a_i" alt="[公式]"> 之间的连接（突触）就是权值矩阵 <img src="https://www.zhihu.com/equation?tex=w_%7Bij%7D" alt="[公式]"> 。Hebb假说意味着一个正输入 <img src="https://www.zhihu.com/equation?tex=p_j" alt="[公式]"> 能够产生一个正输出 <img src="https://www.zhihu.com/equation?tex=a_i" alt="[公式]"> ，那么权值 <img src="https://www.zhihu.com/equation?tex=w_%7Bij%7D" alt="[公式]"> 应该增加，用数学表达式描述如下：</p>
+<p><img src="https://pic1.zhimg.com/v2-223f71825f8dadda4c91f6e400de8040_b.jpg" alt=""></p>
+<p><img src="https://pic1.zhimg.com/80/v2-223f71825f8dadda4c91f6e400de8040_720w.jpg" alt=""></p>
+<p>上式表明权值的变化与（突触）两侧传输函数的乘积成正比。在本章中，将上式简化为：</p>
+<p><img src="https://pic1.zhimg.com/v2-2ddb97a54e75e21e16860ef33a27098c_b.png" alt=""></p>
+<p><img src="https://pic1.zhimg.com/80/v2-2ddb97a54e75e21e16860ef33a27098c_720w.png" alt=""></p>
+<p>简化后，权值的变化与突触两侧传输函数值的乘积成正比。需要注意地是，权值不仅在输入<img src="https://www.zhihu.com/equation?tex=p_j" alt="[公式]">和输出<img src="https://www.zhihu.com/equation?tex=a_i" alt="[公式]">均为正时增长，而且在其均为负时也增长，只有当其符号相反时，权值减小。</p>
+<p>上式中Hebb学习规则是一种无监督学习规则，不需要目标输出的任何信息。如果我们将其中的实际输出ai用目标输出ti代替，即：</p>
+<p><img src="https://pic3.zhimg.com/v2-d7579605d303a5a39418863552a0174e_b.png" alt=""></p>
+<p><img src="https://pic3.zhimg.com/80/v2-d7579605d303a5a39418863552a0174e_720w.png" alt=""></p>
+<p>这样Hebb学习规则就变成了有监督学习规则。网络从了解现在正在做什么转变为应该做什么。将上式写成矩阵形式，有：</p>
+<p><img src="https://pic1.zhimg.com/v2-805cec638bb1621234775789ebb51e9c_b.png" alt=""></p>
+<p><img src="https://pic1.zhimg.com/80/v2-805cec638bb1621234775789ebb51e9c_720w.png" alt=""></p>
+<p>如果假设权值初始矩阵为0，并将Q个输入输出对传入网络，则有：</p>
+<p><img src="https://pic3.zhimg.com/v2-8a3eff82de8cef8f8be0c422803272aa_b.jpg" alt=""></p>
+<p><img src="https://pic3.zhimg.com/80/v2-8a3eff82de8cef8f8be0c422803272aa_720w.jpg" alt=""></p>
+<p>即：</p>
+<p><img src="https://pic3.zhimg.com/v2-98906ca0133150c338c06cbdb16db24e_b.jpg" alt=""></p>
+<p><img src="https://pic3.zhimg.com/80/v2-98906ca0133150c338c06cbdb16db24e_720w.jpg" alt=""></p>
+<p><strong>2. Hebb规则性能分析</strong></p>
+<p>假设所有输入向量 <img src="https://www.zhihu.com/equation?tex=p_q" alt="[公式]"> 为标准正交向量，若取 <img src="https://www.zhihu.com/equation?tex=p_k" alt="[公式]"> 作为网络输入，则有：</p>
+<p><img src="https://pic1.zhimg.com/v2-ccf4f7ce41a6fc69b8ae8b234f34424c_b.jpg" alt=""></p>
+<p><img src="https://pic1.zhimg.com/80/v2-ccf4f7ce41a6fc69b8ae8b234f34424c_720w.jpg" alt=""></p>
+<p>由正交向量内积为0，有： <img src="https://www.zhihu.com/equation?tex=%5Cleft%28%5Cmathbf%7Bp%7D_%7Bq%7D%5E%7BT%7D+%5Cmathbf%7Bp%7D_%7Bk%7D%5Cright%29%3D%5Cleft%5C%7B%5Cbegin%7Barray%7D%7Bll%7D%7B1%7D+%26+%7Bq%3Dk%7D+%5C%5C+%7B0%7D+%26+%7Bq+%5Cneq+k%7D%5Cend%7Barray%7D%5Cright." alt="[公式]"> ，所以有： <img src="https://www.zhihu.com/equation?tex=%5Cmathbf%7Ba%7D%3D%5Cmathbf%7BW%7D+%5Cmathbf%7Bp%7D_%7Bk%7D%3D%5Cmathbf%7Bt%7D_%7Bk%7D" alt="[公式]"></p>
+<p>即网络实际输出等于目标输出，所以当输入标准向量为标准正交向量时，应用Hebb规则对每个输入向量都能产生正确的输出结果。</p>
+<p>假设所有输入向量<img src="https://www.zhihu.com/equation?tex=p_q" alt="[公式]">为不正交的单位长度的向量，若取<img src="https://www.zhihu.com/equation?tex=p_k" alt="[公式]">作为网络输入，则有：</p>
+<p><img src="https://pic1.zhimg.com/v2-1e03a54546b705c60404e50a74d06670_b.png" alt=""></p>
+<p><img src="https://pic1.zhimg.com/80/v2-1e03a54546b705c60404e50a74d06670_720w.png" alt=""></p>
+<p>所以网络实际输出与目标输出之间的误差为： <img src="https://www.zhihu.com/equation?tex=%5Csum_%7Bq%3D1+%5Catop+q+%5Cneq+k%7D%5E%7BQ%7D+%5Cmathrm%7Bt%7D_%7Bq%7D%5Cleft%28%5Cmathbf%7Bp%7D_%7Bq%7D%5E%7BT%7D+%5Cmathbf%7Bp%7D_%7Bk%7D%5Cright%29" alt="[公式]"></p>
+<h3 id="伪逆规则"><a href="#伪逆规则" class="headerlink" title="伪逆规则"></a>伪逆规则</h3><p>伪逆规则是用来减小误差的一种方法。线性联想器的任务是对于输入 <img src="https://www.zhihu.com/equation?tex=p_q" alt="[公式]"> 产生目标输出 <img src="https://www.zhihu.com/equation?tex=t_q" alt="[公式]"> ，即： <img src="https://www.zhihu.com/equation?tex=%5Cmathbf%7BW%7D+%5Cmathbf%7Bp%7D_%7Bq%7D%3D%5Cmathbf%7Bt%7D_%7Bq%7D+%5Cquad+q%3D1%2C2%2C+%5Cdots%2C+Q" alt="[公式]"> 。如果无法完全找到一个权值矩阵完全精确地满足上述等式，那么我们希望线性联想器的输出能够更加接近目标输出，使用以下评价函数来衡量这个接近程度： <img src="https://www.zhihu.com/equation?tex=F%28%5Cmathbf%7BW%7D%29%3D%5Csum_%7Bq%3D1%7D%5E%7BQ%7D%5Cleft%5C%7C%5Cmathbf%7Bt%7D_%7Bq%7D-%5Cmathbf%7BW%7D+%5Cmathbf%7Bp%7D_%7Bq%7D%5Cright%5C%7C%5E%7B2%7D" alt="[公式]"></p>
+<p>将 <img src="https://www.zhihu.com/equation?tex=%5Cmathbf%7BW%7D_%7B%5Cmathbf%7Bp%7D_%7Bq%7D%7D%3D%5Cmathbf%7Bt%7D_%7Bq%7D+%5Cquad+q%3D1%2C2%2C+%5Cldots%2C+Q" alt="[公式]"> 写成矩阵形式为： <img src="https://www.zhihu.com/equation?tex=%5Cmathbf%7BW%7D+%5Cmathbf%7BP%7D%3D%5Cmathbf%7BT%7D" alt="[公式]"> ，</p>
+<p>其中 <img src="https://www.zhihu.com/equation?tex=%5Cmathbf%7BT%7D%3D%5Cleft%5B+%5Cbegin%7Barray%7D%7Bllll%7D%7B%5Cmathbf%7Bt%7D_%7B1%7D%7D+%26+%7B%5Cmathbf%7Bt%7D_%7B2%7D%7D+%26+%7B%5Cldots%7D+%26+%7B%5Cmathbf%7Bt%7D_%7BQ%7D%7D%5Cend%7Barray%7D%5Cright%5D" alt="[公式]"> ， <img src="https://www.zhihu.com/equation?tex=%5Cmathbf%7BP%7D%3D%5Cleft%5B+%5Cbegin%7Barray%7D%7Blll%7D%7B%5Cmathbf%7Bp%7D_%7B1%7D%7D+%26+%7B%5Cmathbf%7Bp%7D_%7B2%7D+%5Cldots%7D+%26+%7B%5Cmathbf%7Bp%7D_%7BQ%7D%7D%5Cend%7Barray%7D%5Cright%5D" alt="[公式]"></p>
+<p>则有 <img src="https://www.zhihu.com/equation?tex=F%28%5Cmathbf%7BW%7D%29%3D%5C%7C%5Cmathbf%7BT%7D-%5Cmathbf%7BW%7D+%5Cmathbf%7BP%7D%5C%7C%5E%7B2%7D%3D%5C%7C%5Cmathbf%7BE%7D%5C%7C%5E%7B2%7D" alt="[公式]"> ，</p>
+<p>其中 <img src="https://www.zhihu.com/equation?tex=%5Cmathbf%7BE%7D%3D%5Cmathbf%7BT%7D-%5Cmathbf%7BW%7D+%5Cmathbf%7BP%7D" alt="[公式]"> ，且 <img src="https://www.zhihu.com/equation?tex=%7C%7C+%5Cmathbf%7BE%7D+%5C%7C%5E%7B2%7D%3D%5Csum_%7Bi%7D+%5Csum_%7Bj%7D+e_%7Bi+j%7D%5E%7B2%7D" alt="[公式]"></p>
+<p>如果 <img src="https://www.zhihu.com/equation?tex=%5Cmathbf%7BW+P%7D%3D%5Cmathbf%7BT%7D" alt="[公式]"> 有解，则 <img src="https://www.zhihu.com/equation?tex=F%28%5Cmathbf%7BW%7D%29" alt="[公式]"> 可为0。当P可逆时，解为：<img src="https://www.zhihu.com/equation?tex=%5Cmathbf%7BW%7D%3D%5Cmathbf%7BT%7D+%5Cmathbf%7BP%7D%5E%7B-1%7D" alt="[公式]">，但P一般不是方阵，不存在准确的逆矩阵。这种情况下可以使用伪逆矩阵得到最小化F(W)的权值矩阵。</p>
+<p>伪逆规则为：<img src="https://www.zhihu.com/equation?tex=%5Cmathbf%7BW%7D%3D%5Cmathbf%7BT%7D+%5Cmathbf%7BP%7D%5E%7B%2B%7D" alt="[公式]">，其中 <img src="https://www.zhihu.com/equation?tex=%5Cmathbf%7BP%7D%5E%7B%2B%7D" alt="[公式]"> 为Moore-Penrose伪逆矩阵。对于实数矩阵，它的伪逆矩阵唯一存在，且满足下列条件：</p>
+<p><img src="https://pic4.zhimg.com/v2-01592d6856913806862f7ff68265bb23_b.png" alt=""></p>
+<p><img src="https://pic4.zhimg.com/80/v2-01592d6856913806862f7ff68265bb23_720w.png" alt=""></p>
+<p>当矩阵 <img src="https://www.zhihu.com/equation?tex=%5Cmathbf%7BP%7D" alt="[公式]"> 的行数R大于其列数Q，且P的列向量线性无关时，其伪逆矩阵为：</p>
+<p><img src="https://pic1.zhimg.com/v2-50a3c681e4338ec28b3bc026e89fdd74_b.png" alt=""></p>
+<p><img src="https://pic1.zhimg.com/80/v2-50a3c681e4338ec28b3bc026e89fdd74_720w.png" alt=""></p>
+<p>使用伪逆规则 <img src="https://www.zhihu.com/equation?tex=%5Cmathbf%7BW%7D%3D%5Cmathbf%7BT%7D+%5Cmathbf%7BP%7D%5E%7B%2B%7D" alt="[公式]"> 代替Hebb规则计算权值矩阵（学习），更加精确。</p>
+<h3 id="应用"><a href="#应用" class="headerlink" title="应用"></a>应用</h3><p>将Hebb规则应用于一个已经极度简化的实际模式识别问题，这里将使用一种特殊的联想记忆模型——自联想记忆模型。自联想记忆模型中，目标输出向量等于输入向量（ <img src="https://www.zhihu.com/equation?tex=%5Cmathbf%7Bt%7D_%7Bq%7D%3D%5Cmathbf%7Bp%7D_%7Bq%7D" alt="[公式]">）。我们将用此模型存储一组模式然后恢复这些模式，即使输入模式遭到损坏，它依然能将其复原。</p>
+<p>需要存储的模式（6×5网格中的0,1,2）如下图，这些模式既是输入又是目标输出。</p>
+<p><img src="https://pic4.zhimg.com/v2-ade0350289963b9d8bf10d5907a918ef_b.png" alt=""></p>
+<p><img src="https://pic4.zhimg.com/80/v2-ade0350289963b9d8bf10d5907a918ef_720w.png" alt=""></p>
+<p>为了将以上模式用向量表达，规定白色方格用-1表示，深色方格用1表示，逐列扫描每一个模式。例如： <img src="https://www.zhihu.com/equation?tex=%5Cmathbf%7Bp%7D_%7B1%7D%3D%5Cleft%5B+%5Cbegin%7Barray%7D%7Blllllllllll%7D%7B-1%7D+%26+%7B1%7D+%26+%7B1%7D+%26+%7B1%7D+%26+%7B-1%7D+%26+%7B1%7D+%26+%7B-1%7D+%26+%7B-1%7D+%26+%7B1%7D+%26+%7B%5Cdots%7D+%26+%7B1%7D%5Cend%7Barray%7D%5Cright%5D%5E%7BT%7D" alt="[公式]"></p>
+<p>利用Hebb规则可计算权值矩阵为（Hebb学习过程）：</p>
+<p><img src="https://pic4.zhimg.com/v2-7f18a328e230d060fe886ba98d249a1f_b.jpg" alt=""></p>
+<p><img src="https://pic4.zhimg.com/80/v2-7f18a328e230d060fe886ba98d249a1f_720w.jpg" alt=""></p>
+<p>由于标准向量中的元素仅能取-1和1，所以网络输出向量也应该仅能取-1和1，所以我们要对线性联想器进行修改。使用对称硬限值函数代替原来的线性传输函数，则修改后的网络如下图：</p>
+<p><img src="https://pic4.zhimg.com/v2-93996586c3fc2fbd8bd2fd6bc869add3_b.png" alt=""></p>
+<p><img src="https://pic4.zhimg.com/80/v2-93996586c3fc2fbd8bd2fd6bc869add3_720w.png" alt=""></p>
+<p>现在通过向网络输入各种“受损”的标准模式，来检测网络的输出，以研究网络的运行情况。</p>
+<p>可以抹去标准模式中的下半部分：（输入→实际输出）</p>
+<p><img src="https://pic1.zhimg.com/v2-87409db98919f4f910b14ad0e4250a3c_b.png" alt=""></p>
+<p><img src="https://pic1.zhimg.com/80/v2-87409db98919f4f910b14ad0e4250a3c_720w.png" alt=""></p>
+<p>抹去标准模式中更多的部分：（输入→实际输出）</p>
+<p><img src="https://pic1.zhimg.com/v2-2b11e4846f061cd244da45e9c81818a4_b.png" alt=""></p>
+<p><img src="https://pic1.zhimg.com/80/v2-2b11e4846f061cd244da45e9c81818a4_720w.png" alt=""></p>
+<p>含有噪声的标准模式：（输入→实际输出）</p>
+<p><img src="https://pic1.zhimg.com/v2-d8db6c289faed63f52f964ee4dd28304_b.png" alt=""></p>
+<p><img src="https://pic1.zhimg.com/80/v2-d8db6c289faed63f52f964ee4dd28304_720w.png" alt=""></p>
+<h3 id="Hebb学习的变形"><a href="#Hebb学习的变形" class="headerlink" title="Hebb学习的变形"></a>Hebb学习的变形</h3><p>Hebb规则为：</p>
+<p><img src="https://pic1.zhimg.com/v2-805cec638bb1621234775789ebb51e9c_b.png" alt=""></p>
+<p><img src="https://pic1.zhimg.com/80/v2-805cec638bb1621234775789ebb51e9c_720w.png" alt=""></p>
+<p>Hebb规则面临的一个难题是：当训练数据集包含大量输入模式时，权值矩阵将包含一些高数值元素。</p>
+<p>可以通过一个称为学习率的正参数α(α&lt;1)来限值权值矩阵元素值的增加量，即：</p>
+<p><img src="https://pic2.zhimg.com/v2-07351b3c5ae5b259d0d3712da6d07549_b.png" alt=""></p>
+<p><img src="https://pic2.zhimg.com/80/v2-07351b3c5ae5b259d0d3712da6d07549_720w.png" alt=""></p>
+<p>或者再添加一项衰减项，让学习规则表现得像一个平滑的滤波器，使最近的一次输入变得重要：（其中γ是一个小于1的正数，当γ区域0时学习规则趋于Hebb学习的标准形式，γ越趋于1，学习规则忘记的速度越快）</p>
+<p><img src="https://pic2.zhimg.com/v2-ed1da97aed798e26577311f0afc0d0e9_b.png" alt=""></p>
+<p><img src="https://pic2.zhimg.com/80/v2-ed1da97aed798e26577311f0afc0d0e9_720w.png" alt=""></p>
+<p>如果在Hebb规则中使用目标输出与实际输出之差代替目标输出，可以得到另一个重要的学习规则：</p>
+<p><img src="https://pic1.zhimg.com/v2-6a54de33c1b9741cd9457e2e7a484f60_b.png" alt=""></p>
+<p><img src="https://pic1.zhimg.com/80/v2-6a54de33c1b9741cd9457e2e7a484f60_720w.png" alt=""></p>
+<p>这一规则称为增量规则或Widrow-Hoff算法。增量规则通过调整权值来最小化均方误差，因此这一规则与伪逆规则得到的结果相同（第10章详细讨论），因为伪逆规则的最小化的是误差的平方和，增量规则的优势在于每接受一个输入模式，权值矩阵就会进行更新，而伪逆规则则是在接受到所有的输入/输出对之后，进行一次计算而得到的权值矩阵。这种依次更新方式使得增量规则能适用于动态的变化环境。</p>
+<hr>
+<p><strong>例题1：考虑线性联想器（如下图）</strong></p>
+<p>**</p>
+<p><img src="https://pic2.zhimg.com/v2-bc566390be4626714ac6bba59713f869_b.jpg" alt=""></p>
+<p><img src="https://pic2.zhimg.com/80/v2-bc566390be4626714ac6bba59713f869_720w.jpg" alt=""></p>
+<p>**</p>
+<p><strong>假设输入/输出标准向量为：</strong></p>
+<p>**</p>
+<p><img src="https://pic2.zhimg.com/v2-fc39396b0414fcd71f3e4495507139b9_b.jpg" alt=""></p>
+<p><img src="https://pic2.zhimg.com/80/v2-fc39396b0414fcd71f3e4495507139b9_720w.jpg" alt=""></p>
+<p>**</p>
+<ul>
+<li><strong>运用Hebb规则，为线性联想器寻找合适的权值矩阵，并将 <img src="https://www.zhihu.com/equation?tex=p_1" alt="[公式]"> 输入到线性联想器，测试。</strong></li>
+<li><strong>运用伪逆规则，为线性联想器寻找合适的权值矩阵，并将 <img src="https://www.zhihu.com/equation?tex=p_1" alt="[公式]"> 输入到线性联想器，测试。</strong></li>
+</ul>
+<p>matlab求解如下：</p>
+<pre><code>clear all
+close all
+clc
+
+% 输入向量
+P = [1   1
+     -1  1
+     1  -1
+     -1 -1];
+ % 目标输出向量
+ T = [1 1
+     -1 1];
+
+% 有监督的Hebb规则迭代更新权值矩阵
+W1 = zeros(size(T, 1), size(P, 1));     % 初始化为0
+for i = 1:size(P, 2)
+    W1 = W1 + T(:, i) * P(:, i)&#39;;
+end
+
+% 有监督的Hebb规则矩阵计算权值矩阵
+W2 = T * P&#39;;
+
+% 伪逆规则计算权值矩阵
+Pmp = (P&#39;*P) \ P&#39;;
+W3 = T * Pmp;
+
+% 将p1输入监督的Hebb规则线性联想器
+a1 =  purelin(W1 * P(:,1));
+
+% 将p1输入伪逆规则线性联想器
+a2 =  purelin(W3 * P(:,1));
+
+fprintf(&#39;有监督的Hebb规则矩阵计算权值矩阵&#39;);
+display(W1)
+fprintf(&#39;伪逆规则计算权值矩阵&#39;);
+display(W3)
+fprintf(&#39;将p1输入监督的Hebb规则线性联想器，得到输出：&#39;);
+display(a1)
+fprintf(&#39;将p1输入监督的Hebb规则线性联想器，得到输出：&#39;);
+display(a2)
+
+function f = purelin(n)
+    f = n;
+end
+</code></pre><p>计算结果为：</p>
+<p><img src="https://pic2.zhimg.com/v2-4047e85e1ed334903323ef28361f302d_b.jpg" alt=""></p>
+<p><img src="https://pic2.zhimg.com/80/v2-4047e85e1ed334903323ef28361f302d_720w.jpg" alt=""></p>
+<p>Hebb规则未产生正确结果，因为 <img src="https://www.zhihu.com/equation?tex=p_1" alt="[公式]"> 和 <img src="https://www.zhihu.com/equation?tex=p_2" alt="[公式]"> 正交，输出结果 <img src="https://www.zhihu.com/equation?tex=%5Cmathbf%7BW%7D%5E%7Bh%7D+%5Cmathbf%7Bp%7D_%7B1%7D%3D%5Cmathbf%7Bt%7D_%7B1%7D%5Cleft%28%5Cmathbf%7Bp%7D_%7B1%7D%5E%7BT%7D+%5Cmathbf%7Bp%7D_%7B1%7D%5Cright%29" alt="[公式]"> ，向量<img src="https://www.zhihu.com/equation?tex=p_1" alt="[公式]">没有被归一化，即 <img src="https://www.zhihu.com/equation?tex=%5Cleft%28%5Cmathbf%7Bp%7D_%7B1%7D%5E%7BT%7D+%5Cmathbf%7Bp%7D_%7B1%7D%5Cright%29+%5Cneq+1" alt="[公式]"> ，所以输出不等于 <img src="https://www.zhihu.com/equation?tex=t_1" alt="[公式]"></p>
+<p>另一方面，伪逆规则可以确保最小化 <img src="https://www.zhihu.com/equation?tex=%5Csum_%7Bq%3D1%7D%5E%7B2%7D%5Cleft%5C%7C%5Cmathbf%7Bt%7D_%7Bq%7D-%5Cmathbf%7BW%7D+%5Cmathbf%7Bp%7D_%7Bq%7D%5Cright%5C%7C%5E%7B2%7D" alt="[公式]"></p>
+<p><strong>例题2 ：考虑图中的三个设计标准模式（p1,p2,p3）</strong></p>
+<p>**</p>
+<p><img src="https://pic2.zhimg.com/v2-5fa92469a9c5208eac60cfb1a4a81515_b.png" alt=""></p>
+<p><img src="https://pic2.zhimg.com/80/v2-5fa92469a9c5208eac60cfb1a4a81515_720w.png" alt=""></p>
+<p>**</p>
+<p><strong>利用Hebb规则设计一个感知机网络来识别这三种模式。</strong></p>
+<p><strong>求网络对测试模式pt（下图）的响应，并判断该响应是否正确。</strong></p>
+<p>解：将以上模式转化为向量：</p>
+<p><img src="https://www.zhihu.com/equation?tex=%5Cmathbf%7Bp%7D_%7B1%7D%3D%5Cleft%5B+%5Cbegin%7Barray%7D%7Bc%7D%7B1%7D+%5C%5C+%7B-1%7D+%5C%5C+%7B1%7D+%5C%5C+%7B1%7D%5Cend%7Barray%7D%5Cright%5D+%5Cquad+%5Cmathbf%7Bp%7D_%7B2%7D%3D%5Cleft%5B+%5Cbegin%7Barray%7D%7Bc%7D%7B1%7D+%5C%5C+%7B1%7D+%5C%5C+%7B-1%7D+%5C%5C+%7B1%7D%5Cend%7Barray%7D%5Cright%5D+%5Cquad+%5Cmathbf%7Bp%7D_%7B3%7D%3D%5Cleft%5B+%5Cbegin%7Barray%7D%7Bc%7D%7B-1%7D+%5C%5C+%7B-1%7D+%5C%5C+%7B-1%7D+%5C%5C+%7B1%7D%5Cend%7Barray%7D%5Cright%5D+%5Cquad+%5Cmathbf%7Bp%7D_%7Bt%7D%3D%5Cleft%5B+%5Cbegin%7Barray%7D%7Bc%7D%7B1%7D+%5C%5C+%7B-1%7D+%5C%5C+%7B1%7D+%5C%5C+%7B-1%7D%5Cend%7Barray%7D%5Cright%5D" alt="[公式]"></p>
+<p>由于共三种标准模式，所以输出向量要有两个元素（二维），将标准模式对应的输出向量设置为： <img src="https://www.zhihu.com/equation?tex=%5Cmathbf%7Bt%7D_%7B1%7D%3D%5Cleft%5B+%5Cbegin%7Barray%7D%7Bc%7D%7B-1%7D+%5C%5C+%7B-1%7D%5Cend%7Barray%7D%5Cright%5D+%5Cquad+%5Cmathbf%7Bt%7D_%7B2%7D%3D%5Cleft%5B+%5Cbegin%7Barray%7D%7Bc%7D%7B-1%7D+%5C%5C+%7B1%7D%5Cend%7Barray%7D%5Cright%5D+%5Cquad+%5Cmathbf%7Bt%7D_%7B3%7D%3D%5Cleft%5B+%5Cbegin%7Barray%7D%7Bc%7D%7B1%7D+%5C%5C+%7B-1%7D%5Cend%7Barray%7D%5Cright%5D" alt="[公式]"></p>
+<pre><code>clear all
+close all
+clc
+
+% 输入向量
+P = [1   1  -1
+     -1  1  -1
+     1  -1  -1
+     1   1   1];
+ p = [1; -1; 1; -1];
+ % 目标输出向量
+ T = [-1 -1  1
+      -1  1 -1];
+
+% 有监督的Hebb规则矩阵计算权值矩阵
+W1 = T * P&#39;;
+
+% 伪逆规则计算权值矩阵
+Pmp = (P&#39;*P) \ P&#39;;
+W2 = T * Pmp;
+
+% 将p1输入监督的Hebb规则线性联想器
+a1 =  hardlims(W1 * p);
+
+% 将p1输入伪逆规则线性联想器
+a2 =  hardlims(W2 * p);
+
+fprintf(&#39;有监督的Hebb规则矩阵计算权值矩阵&#39;);
+display(W1)
+fprintf(&#39;伪逆规则计算权值矩阵&#39;);
+display(W2)
+fprintf(&#39;将p1输入监督的Hebb规则线性联想器，得到输出：&#39;);
+display(a1)
+fprintf(&#39;将p1输入监督的Hebb规则线性联想器，得到输出：&#39;);
+display(a2)
+
+function f = hardlims(n)
+    for i = 1:length(n)
+        if n(i) &gt;=0
+            f(i,1) = 1;
+        else
+            f(i,1) = -1;
+        end
+    end
+end
+</code></pre><p><img src="https://pic1.zhimg.com/v2-5f67cacea0007cee35bc140f7cc8ec7c_b.jpg" alt=""></p>
+<p><img src="https://pic1.zhimg.com/80/v2-5f67cacea0007cee35bc140f7cc8ec7c_720w.jpg" alt=""></p>
+<p>因为pt与p1的Hamming距离最接近，所以网络的判断是正确的。</p>
+
+      
+
+      
+        <div class="page-reward">
+          <a href="javascript:;" class="page-reward-btn tooltip-top">
+            <div class="tooltip tooltip-east">
+            <span class="tooltip-item">
+              赏
+            </span>
+            <span class="tooltip-content">
+              <span class="tooltip-text">
+                <span class="tooltip-inner">
+                  <p class="reward-p"><i class="icon icon-quo-left"></i>谢谢你请我吃糖果<i class="icon icon-quo-right"></i></p>
+                  <div class="reward-box">
+                    
+                    
+                    <div class="reward-box-item">
+                      <img class="reward-img" src="/assets/wechatpay.jpg">
+                      <span class="reward-type">微信</span>
+                    </div>
+                    
+                  </div>
+                </span>
+              </span>
+            </span>
+          </div>
+          </a>
+        </div>
+      
+    </div>
+    <div class="article-info article-info-index">
       
       
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2020" class="archive-year">2020</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2020/03/27/APM%E9%A3%9E%E8%A1%8C%E6%A8%A1%E5%BC%8F%E5%86%85%E9%83%A8%E7%BB%93%E6%9E%84%E2%80%94%E2%80%94%E4%BB%A5loiter%E4%B8%BA%E4%BE%8B/" class="archive-article-date">
-  	<time datetime="2020-03-27T09:58:17.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-03-27</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2020/03/27/APM%E9%A3%9E%E8%A1%8C%E6%A8%A1%E5%BC%8F%E5%86%85%E9%83%A8%E7%BB%93%E6%9E%84%E2%80%94%E2%80%94%E4%BB%A5loiter%E4%B8%BA%E4%BE%8B/">APM飞行模式内部结构——以loiter为例</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">APM</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">神经网络</a>
         		</li>
       		
 		</ul>
 	</div>
 
-          
+      
 
+      
+
+      
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
         </div>
-        <div class="clearfix"></div>
-    </header>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//api.qrserver.com/v1/create-qr-code/?size=150x150&data=sundexin111.github.io2020/04/21/%E6%9C%89%E7%9B%91%E7%9D%A3%E7%9A%84Hebb%E5%AD%A6%E4%B9%A0/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
+
   
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2020/03/25/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E7%BA%BF%E6%80%A7%E8%A1%A8/" class="archive-article-date">
-  	<time datetime="2020-03-25T14:17:47.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-03-25</time>
-</a>
+<nav id="article-nav">
+  
+  
+    <a href="/2020/04/20/asbQuadcopter%E7%8A%B6%E6%80%81%E4%BC%B0%E8%AE%A1%E5%99%A8/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">asbQuadcopter状态估计器</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
         </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2020/03/25/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E7%BA%BF%E6%80%A7%E8%A1%A8/">数据结构-线性表</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">数据结构</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
+        
+        
+        <div class="toc-container tooltip-left">
+            <i class="icon-font icon-category"></i>
+            <div class="tooltip tooltip-east">
+                <span class="tooltip-item">
+                </span>
+                <span class="tooltip-content">
+                    <div class="toc-article">
+                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#有监督的Hebb学习"><span class="toc-number">1.</span> <span class="toc-text">有监督的Hebb学习</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#生物学中的Hebb学习假说"><span class="toc-number">1.1.</span> <span class="toc-text">生物学中的Hebb学习假说</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#线性联想器"><span class="toc-number">1.2.</span> <span class="toc-text">线性联想器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Hebb规则"><span class="toc-number">1.3.</span> <span class="toc-text">Hebb规则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#伪逆规则"><span class="toc-number">1.4.</span> <span class="toc-text">伪逆规则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#应用"><span class="toc-number">1.5.</span> <span class="toc-text">应用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Hebb学习的变形"><span class="toc-number">1.6.</span> <span class="toc-text">Hebb学习的变形</span></a></li></ol></li></ol>
+                    </div>
+                </span>
+            </div>
         </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
+        
+    </div>
+</aside>
+
+
+
   
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2020/03/23/%E8%87%AA%E5%AE%9A%E4%B9%89%E9%A3%9E%E8%A1%8C%E6%A8%A1%E5%BC%8F/" class="archive-article-date">
-  	<time datetime="2020-03-23T13:14:32.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-03-23</time>
-</a>
-        </div>
-    	 
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2020/03/23/%E8%87%AA%E5%AE%9A%E4%B9%89%E9%A3%9E%E8%A1%8C%E6%A8%A1%E5%BC%8F/">自定义飞行模式</a>
-    </h1>
   
 
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">APM</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2020/02/06/ubuntu16-04%E4%B8%8Bpixhawk%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" class="archive-article-date">
-  	<time datetime="2020-02-06T10:02:17.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-02-06</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2020/02/06/ubuntu16-04%E4%B8%8Bpixhawk%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/">ubuntu16.04下pixhawk开发环境搭建</a>
-    </h1>
   
 
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">APM</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-  
-    </div></section>
   
 
-    
-    <nav id="page-nav">
-      <a class="extend prev" rel="prev" href="/archives/2020/">&amp;laquo; Prev</a><a class="page-number" href="/archives/2020/">1</a><span class="page-number current">2</span>
-    </nav>
   
 
 
@@ -375,8 +704,8 @@
 	var yiliaConfig = {
 		mathjax: true,
 		isHome: false,
-		isPost: false,
-		isArchive: true,
+		isPost: true,
+		isArchive: false,
 		isTag: false,
 		isCategory: false,
 		open_in_new: false,
