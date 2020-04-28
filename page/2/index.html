@@ -186,6 +186,82 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-卡尔曼滤波器" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/04/01/%E5%8D%A1%E5%B0%94%E6%9B%BC%E6%BB%A4%E6%B3%A2%E5%99%A8/">卡尔曼滤波器</a>
+    </h1>
+  
+
+        
+        <a href="/2020/04/01/%E5%8D%A1%E5%B0%94%E6%9B%BC%E6%BB%A4%E6%B3%A2%E5%99%A8/" class="archive-article-date">
+  	<time datetime="2020-04-01T05:44:31.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-01</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="1-什么是卡尔曼滤波"><a href="#1-什么是卡尔曼滤波" class="headerlink" title="1 什么是卡尔曼滤波"></a>1 什么是卡尔曼滤波</h1><p>最近在阅读APM的源码，督导了姿态解算的部分，了解到姿态结算是依靠卡尔曼扩展滤波器（EKF）解算出位置的。然后笔者就去了解了卡尔曼滤波的相关知识。笔者的简单理解就是卡尔曼滤波就是计算出从你当前的位置到达目标位置的最优算法。比如说一个四旋翼无人机，你想让他从当前位置飞到100m外的目标地点（固定的），我们简单的认为只需要导航就可以了啊，但是实际情况下导航在引导无人机从当前位置到目标位置的过程中，会遇到很多噪<br>音，这样可能会使无人机偏离目标地点。有人说可以依靠数学模型计算出目标位置，但实际情况中有很多例子很难建出具体的数学模型，就算能建出具体的模型，但是在迭代的过程中有误差的话，会使这个误差越来越大，偏离目标地点。所以这就引出了卡尔曼滤波，它会结合传感器的测量值与数学模型的估算值得到最优估算状态。然后区分一下卡尔曼滤波和扩展卡尔曼滤波的区别，卡尔曼滤波主要用在线性系统中，扩展卡尔曼滤波主要用在非线性系统中（在APM姿态解算中主要用到扩展卡尔曼滤波（EKF））。本文将用最简单的例子介绍一下卡尔曼滤波器。<br>
+        
+          <a class="article-more-a" href="/2020/04/01/%E5%8D%A1%E5%B0%94%E6%9B%BC%E6%BB%A4%E6%B3%A2%E5%99%A8/#more">more >></a>
+        
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">APM</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2020/04/01/%E5%8D%A1%E5%B0%94%E6%9B%BC%E6%BB%A4%E6%B3%A2%E5%99%A8/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-数据结构——栈" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -695,11 +771,11 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">神经网络</a>
+                <a href="javascript:void(0)" class="js-tag color5">数据结构</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">数据结构</a>
+                <a href="javascript:void(0)" class="js-tag color5">神经网络</a>
               </li>
              
               <li class="article-tag-list-item">

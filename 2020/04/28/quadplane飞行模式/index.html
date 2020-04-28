@@ -6,14 +6,19 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>Archives: 2020/4 | Hexo</title>
+  <title>quadplane飞行模式 | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Hexo">
-<meta property="og:url" content="http://yoursite.com/archives/2020/04/index.html">
+  <meta name="description" content="本文转载于(https:&#x2F;&#x2F;blog.csdn.net&#x2F;u012814946&#x2F;article&#x2F;details&#x2F;79794254 APM中quadplane是ArduPlane下的一个分支，代表的是倾转四旋翼的固件。本文主要介绍倾转四旋翼的飞行模式。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="quadplane飞行模式">
+<meta property="og:url" content="http://yoursite.com/2020/04/28/quadplane%E9%A3%9E%E8%A1%8C%E6%A8%A1%E5%BC%8F/index.html">
 <meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="本文转载于(https:&#x2F;&#x2F;blog.csdn.net&#x2F;u012814946&#x2F;article&#x2F;details&#x2F;79794254 APM中quadplane是ArduPlane下的一个分支，代表的是倾转四旋翼的固件。本文主要介绍倾转四旋翼的飞行模式。">
 <meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-04-28T13:48:36.000Z">
+<meta property="article:modified_time" content="2020-04-28T15:30:21.249Z">
 <meta property="article:author" content="若枫">
+<meta property="article:tag" content="APM">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternative" href="/atom.xml" title="Hexo" type="application/atom+xml">
@@ -185,35 +190,146 @@
           </div>
           <div id="js-content" class="content-ll">
             
+<article id="post-quadplane飞行模式" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
   
+    <h1 class="article-title" itemprop="name">
+      quadplane飞行模式
+    </h1>
   
-    
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2020" class="archive-year">2020</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2020/04/28/quadplane%E9%A3%9E%E8%A1%8C%E6%A8%A1%E5%BC%8F/" class="archive-article-date">
+
+        
+        <a href="/2020/04/28/quadplane%E9%A3%9E%E8%A1%8C%E6%A8%A1%E5%BC%8F/" class="archive-article-date">
   	<time datetime="2020-04-28T13:48:36.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-28</time>
 </a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2020/04/28/quadplane%E9%A3%9E%E8%A1%8C%E6%A8%A1%E5%BC%8F/">quadplane飞行模式</a>
-    </h1>
-  
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>本文转载于<a href="https://blog.csdn.net/u012814946/article/details/79794254" target="_blank" rel="noopener">(https://blog.csdn.net/u012814946/article/details/79794254</a></p>
+<p>APM中quadplane是ArduPlane下的一个分支，代表的是倾转四旋翼的固件。本文主要介绍倾转四旋翼的飞行模式。<br><a id="more"></a><br>qadplane下包含了plane下的所有模式：</p>
+<ul>
+<li><p>1 Manual 手动模式</p>
+<p>RC 直接控制飞机不经过飞控， RC输出可能与输入不同的方式如下：如果触发了配置的故障保护或地理围栏，并且Plane获得控制权如果启用了VTAIL_OUTPUT选项，则在输出上应用VTAIL混控器，如果启用了ELEVON_OUTPUT选项，则会在输出上应用Elevon混控器。</p>
+</li>
+<li><p>2 Stabilize 增稳：</p>
+<p>RC 经过飞控简单的稳定， 如果你松开摇杆飞机会自动平飞， 相对的飞机的倾斜与机动会变的不容易。最好使用 FBWA 模式替代飞机的增稳。油门会受到参数THR_MIN和THR_MAX的限制。本模式不适合用于调整控制回路。</p>
+</li>
+<li><p>3 FBWA 线性 A 增稳 / 电传A：</p>
+<p>对于没有经验的飞手是最佳模式。飞机保持指定的横滚限制LIM_ROLL_CD（厘度）及和俯仰限制 LIM_PITCH_MAX/<br>LIM_PITCH_MIN。需要注意的是控制水平不意味着飞机能控制高度，主要是由飞行速度（油门）控制，如果想要高度保持，需要用 FBWB 模式。FBWA 油门是手动控制， 输出量范围由 THR_MIN 和 THR_MAX 限制。方向舵也是手动及飞控协调混控，即便在地面上可以控制轮子转动。</p>
+</li>
+<li>4 FBWB 线性 B 增稳 / 电传B：</li>
+</ul>
+<p>类似于 FBWA，但能够定高。横滚和俯仰同 FBWA 模式， 并利用油门控制空速。俯仰摇杆变化就会改变高度，放开后飞控试图保持目前的高度。 多大的水平角反应依赖于FBWB_CLIMB_RATE 参数，默认为 2 米/秒。FBWB_ELEV_REV 参数的默认值是向后拉摇杆导致飞机攀升。如果设置为 1，则动作会相反。如果装了空速计， 调整空速范围 ARSPD_FBW_MIN 到 ARSPD_FBW_MAX，当油门最低时飞机将尝试在 ARSPD_FBW_MIN 飞行。 最高时它会尝试在 ARSPD_FBW_MAX 飞行。如果没有空速计， 油门将调整输出量以达到所需定高要求。 油门杆最好大过计算要求的值，也会导致飞的更快方向舵跟 FBWA 一样，是协调混控的。</p>
+<ul>
+<li>5 Acro 特技模式：</li>
+</ul>
+<p>能像手动模式做出特技，且又同 FBWB 能够定高。做出翻滚及螺旋依赖 ACRO_ROLL_RATE 及 ACRO_PITCH_RATE, 默认值是 180 度/秒，并响应着摇杆行程量。飞机会一直保持高度，如果 RC 输入 30 度的侧倾及 10 度的纵倾后放开摇杆，飞机就保持在这个高度上，即便是倒飞的状态下。所以这个模式很容易失速，需要及时切换到手动模式改出。</p>
+<ul>
+<li>6 Cruise 巡航模式：</li>
+</ul>
+<p>自动控制高度，速度，方向，永远朝向远处 1Km 的目标（机头锁定），直到摇杆改动方向及高度，比 FBWB 好用。需要调整 FBWB_CLIMB_RATE rate，飞行速度则根据油门量。</p>
+<ul>
+<li>7 Auto 自动模式：</li>
+</ul>
+<p>根据地面站航点飞行， 如果需要副翼及水平方向在飞行中可以改变（开启 Stick_MIXING)，模式跟 FBWA 相似。</p>
+<p>“Home”位置始终应该是您飞机的实际GPS锁定后的起飞位置：</p>
+<p>在解锁之前获取GPS锁定非常重要，以便RTL，Loiter，Auto或任何GPS依赖模式正常工作。<br>对于平面，初始位置最初在飞机获得其GPS锁定时建立。 只要自动驾驶仪解锁，它就会不断更新。<br>这意味着如果您在Plane中执行RTL，它将返回到它解锁时的位置 （假设它已获得GPS锁定）。<br>考虑使用Rally Points（集结点）以避免直接返回到RTL上的解锁点。</p>
+<ul>
+<li>8 RTL 返航模式：</li>
+</ul>
+<p>在RTL模式下，飞机将返回其原始位置（飞机具有GPS锁定起飞的位置）并在那里绕圈，直到给出备用的指示（或者燃料耗尽！）。 与AUTO模式一样，您也可以使用混合摇杆在此模式下手动“轻推”飞机。 使用ALT_HOLD_RTL参数（以厘米为单位）设置RTL模式的目标海拔高度。</p>
+<p>或者，您可以将飞机配置为返回到Rally Point（集结点），而不是原始位置。</p>
+<ul>
+<li>9 Loiter 定点模式：</li>
+</ul>
+<p>飞机启动 Loiter 模式开始定点绕圆圈飞行，半径根据 WP_LOITER_RAD 参数，并且被NAV_ROLL_CD 参数限制，及受到 NAVL1_PERIOD 影响。如果启用，与RTL和AUTO模式一样，您可以使用混合摇杆“轻推”舵面。</p>
+<ul>
+<li>10 Circle 绕圆飞行：</li>
+</ul>
+<p>类似于游荡式绕圈，不像 Loiter 能保持固定位置。主要作为故障保护模式； 默认情况下，当失控保护触发时进入该模式， 20 秒后切换到 RTL。考虑失控时的保护故意不依赖 GPS 定位， 倾斜角被设定为 LIM_ROLL_CD 除以 3，以确保即使没有用于加速度计校正的GPS速度数据，舵面仍然保持稳定。 这就是圆半径如此之大的原因。圆圈模式使用油门和俯仰控制将高度保持在开始盘旋的高度。</p>
+<ul>
+<li>11 Guided 指点飞行：</li>
+</ul>
+<p>当您希望飞机飞行到地图上的特定点而不设置任务时，将使用GUIDED模式。 大多数地面控制站都支持“指点飞行”功能，您可以点击地图上的某个点，飞机将飞到该位置然后绕圈飞行，类似Loiter。</p>
+<p>GUIDED模式的另一个主要用途是地理围栏。 当地理围栏被破坏时，飞机将进入GUIDED模式，并前往预先设定的地理围栏返回点，在那里它将一直绕圈飞行，直到操作员接管为止。</p>
+<ul>
+<li>12 Takeoff 自动起飞：</li>
+</ul>
+<p>只能在自动任务时启用。 起飞任务指定起飞俯仰角和目标高度。在起飞前，重要的是飞机正向面对风，并与跑道对齐（如果使用轮式起飞）。 飞机将在起飞时试图保持其航向，初始航向由起飞时飞机朝向的方向设定。 强烈建议启用罗盘并正确配置自动起飞，因为GPS航向起飞可导致航向控制不良。 在起飞期间，Plane将使用THR_MAX参数设置的最大油门，当飞机达到任务中指定的目标高度时，起飞任务项目被认为是完成的。如果有轮子要对WHEELSTEER*进行调参PID，手 执 起 飞 要 关 注TKOFF_THR_MINACC 及 TKOFF_MINSPD.</p>
+<ul>
+<li>13 Land 自动降落：</li>
+</ul>
+<p>只能在自动任务时启用，油门及高度都由飞控控制，从目标高度接近LAND_FLARE_ALT（降落阶段拉平高度）或距离目标着陆点接近LAND_FLARE_SEC（降落阶段拉平时间）之后，飞机将“拉平/抬头”到LAND_PITCH_CD（降落俯仰角度，以厘度为单位）并将保持航向到最后。</p>
+<p>设置飞机以实现可靠的自动起飞和着陆非常依赖于机身，建议您首先获得在FBWA模式下驾驶飞机的经验，并准备好在您使用的前几次手动或FBWA模式下接管 自动起飞或降落。</p>
+<p>接下来介绍一下quadplane特有的飞行模式，也就是在旋翼机模式下的飞行模式。</p>
+<ul>
+<li>1 qstable</li>
+</ul>
+<p>本模式类似ArduCopter多旋翼的Stabilize（自稳）模式，摇杆对应控制的是飞机的俯仰角（pitch）、横滚角（roll）和航向角速度（yaw rate），本模式下飞机的roll和pitch是可以自己稳定的。</p>
+<ul>
+<li>2 qhover</li>
+</ul>
+<p>本模式类似ArduCopter多旋翼的Alt_Hold(定高)模式，只控制飞机的Z方向，XY方向是不受控制的，有可能会受到风的影响而向一个方向飘远。</p>
+<ul>
+<li>3 qloiter</li>
+</ul>
+<p>本模式类似ArduCopter多旋翼的Loiter（定点悬停）模式，对飞机的XYZ三个方向都进行位置控制。</p>
+<p>注意：QLOITER模式下的着陆检测逻辑不像Copter中的着陆检测逻辑那么复杂，因此如果您在QLOITER模式下在地面上进行GPS移动，那么飞机可能会尝试在接触时尝试保持位置时翻倒 地面。 建议您在降落时切换到QHOVER或QSTABILIZE，因为它们不受GPS移动的影响。</p>
+<ul>
+<li>4 qland</li>
+</ul>
+<p>本模式类似ArduCopter多旋翼的Land（降落）模式，更新代码的内容同QLOITER，也是XYZ三个方向都在控制.</p>
+<ul>
+<li>5 qrtl</li>
+</ul>
+<p>本模式类似ArduCopter多旋翼的RTL（返航）模式</p>
+<p>a. 以多旋翼模式执行返航(VTOL RTL)  (Q_RTL_MODE参数需置 0）</p>
+<p>①开始以全参数Q_WP_SPEED（初值5m/s）设定的速度飞向返回点，高度由全参数Q_RTL_ALT(初值15m)决定。</p>
+<p>②一旦到达返回点，飞机将开始向地面垂直下降以便着陆。 初始下降率由Q_WP_SPEED_DN（初值1.5m/s）设定。 一旦飞机达到Q_LAND_FINAL_ALT（初值6m）的高度，则下降速率将变为Q_LAND_SPEED（初值0.5m/s），以用于最终着陆阶段。</p>
+<p>③在最终着陆阶段，飞机将通过查找VTOL电机油门何时降至最低阈值以下5秒来检测是否着陆。 当发生这种情况时，飞机将上锁，VTOL电机将停止。</p>
+<p>b. 以固定翼与多旋翼混合模式执行返航(hybrid RTL)（Q_RTL_MODE参数需置 1）</p>
+<p>①将在混合RTL的固定翼部分中瞄准的初始高度与固定翼RTL相同。您应该适当地设置您的集结点高度和ALT_HOLD_RTL选项，以确保飞机到达合理的高度以进行垂直着陆。对于许多QuadPlanes来说，着陆进近高度约为15米。这应该大于或等于Q_RTL_ALT值。</p>
+<p>②使用RTL_RADIUS参数设置从飞机从固定机翼切换到VTOL飞行的返回点的距离，或者如果未设置，则使用WP_LOITER_RAD参数。然后飞机在接近返回点时减速，目标是由Q_RTL_ALT设定的高度。</p>
+<p>③一旦达到返回点，飞机开始下降并降落，完全如上面的a模式所述。</p>
 
-        <div class="article-info info-on-right">
-          
+      
+
+      
+        <div class="page-reward">
+          <a href="javascript:;" class="page-reward-btn tooltip-top">
+            <div class="tooltip tooltip-east">
+            <span class="tooltip-item">
+              赏
+            </span>
+            <span class="tooltip-content">
+              <span class="tooltip-text">
+                <span class="tooltip-inner">
+                  <p class="reward-p"><i class="icon icon-quo-left"></i>谢谢你请我吃糖果<i class="icon icon-quo-right"></i></p>
+                  <div class="reward-box">
+                    
+                    
+                    <div class="reward-box-item">
+                      <img class="reward-img" src="/assets/wechatpay.jpg">
+                      <span class="reward-type">微信</span>
+                    </div>
+                    
+                  </div>
+                </span>
+              </span>
+            </span>
+          </div>
+          </a>
+        </div>
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
@@ -225,364 +341,118 @@
 		</ul>
 	</div>
 
-          
+      
 
+      
+
+      
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
         </div>
-        <div class="clearfix"></div>
-    </header>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//api.qrserver.com/v1/create-qr-code/?size=150x150&data=sundexin111.github.io2020/04/28/quadplane%E9%A3%9E%E8%A1%8C%E6%A8%A1%E5%BC%8F/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
+
   
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2020/04/27/%E7%9B%B4%E5%8D%87%E6%9C%BA%E9%A3%9E%E8%A1%8C%E5%8E%9F%E7%90%86/" class="archive-article-date">
-  	<time datetime="2020-04-27T06:12:15.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-27</time>
-</a>
+<nav id="article-nav">
+  
+  
+    <a href="/2020/04/27/%E7%9B%B4%E5%8D%87%E6%9C%BA%E9%A3%9E%E8%A1%8C%E5%8E%9F%E7%90%86/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">直升机飞行原理</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
         </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2020/04/27/%E7%9B%B4%E5%8D%87%E6%9C%BA%E9%A3%9E%E8%A1%8C%E5%8E%9F%E7%90%86/">直升机飞行原理</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">飞行器理论知识</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
+        
+        
+        <div class="toc-container tooltip-left">
+            <i class="icon-font icon-category"></i>
+            <div class="tooltip tooltip-east">
+                <span class="tooltip-item">
+                </span>
+                <span class="tooltip-content">
+                    <div class="toc-article">
+                    目录，不存在的…
+                    </div>
+                </span>
+            </div>
         </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
+        
+    </div>
+</aside>
+
+
+
   
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2020/04/21/%E6%9C%89%E7%9B%91%E7%9D%A3%E7%9A%84Hebb%E5%AD%A6%E4%B9%A0/" class="archive-article-date">
-  	<time datetime="2020-04-21T09:58:17.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-21</time>
-</a>
-        </div>
-    	 
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2020/04/21/%E6%9C%89%E7%9B%91%E7%9D%A3%E7%9A%84Hebb%E5%AD%A6%E4%B9%A0/">有监督的Hebb学习</a>
-    </h1>
   
 
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">神经网络</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2020/04/20/asbQuadcopter%E7%8A%B6%E6%80%81%E4%BC%B0%E8%AE%A1%E5%99%A8/" class="archive-article-date">
-  	<time datetime="2020-04-20T02:23:58.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-20</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2020/04/20/asbQuadcopter%E7%8A%B6%E6%80%81%E4%BC%B0%E8%AE%A1%E5%99%A8/">asbQuadcopter状态估计器</a>
-    </h1>
   
 
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">APM</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2020/04/20/%E4%BC%A0%E6%84%9F%E5%99%A8/" class="archive-article-date">
-  	<time datetime="2020-04-20T02:23:58.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-20</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2020/04/20/%E4%BC%A0%E6%84%9F%E5%99%A8/">传感器</a>
-    </h1>
   
 
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">APM</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2020/04/19/%E6%84%9F%E7%9F%A5%E6%9C%BA%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/" class="archive-article-date">
-  	<time datetime="2020-04-19T04:21:16.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-19</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2020/04/19/%E6%84%9F%E7%9F%A5%E6%9C%BA%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/">感知机学习方法</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">神经网络</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2020/04/15/Quadcopter%E6%8E%A7%E5%88%B6/" class="archive-article-date">
-  	<time datetime="2020-04-15T07:50:15.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-15</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2020/04/15/Quadcopter%E6%8E%A7%E5%88%B6/">Quadcopter控制</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">APM</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2020/04/13/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E8%AE%BE%E8%AE%A1-%E5%AE%9E%E4%BE%8B/" class="archive-article-date">
-  	<time datetime="2020-04-13T06:11:54.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-13</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2020/04/13/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E8%AE%BE%E8%AE%A1-%E5%AE%9E%E4%BE%8B/">神经网络设计-实例</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">神经网络</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2020/04/08/win10%E8%A7%A3%E5%86%B3%E6%9C%AA%E5%AE%89%E8%A3%85%E4%BB%BB%E4%BD%95%E9%9F%B3%E9%A2%91%E8%BE%93%E5%87%BA%E8%AE%BE%E5%A4%87/" class="archive-article-date">
-  	<time datetime="2020-04-08T09:44:47.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-08</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2020/04/08/win10%E8%A7%A3%E5%86%B3%E6%9C%AA%E5%AE%89%E8%A3%85%E4%BB%BB%E4%BD%95%E9%9F%B3%E9%A2%91%E8%BE%93%E5%87%BA%E8%AE%BE%E5%A4%87/">win10解决未安装任何音频输出设备</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">计算机系统</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2020/04/06/%E6%89%A9%E5%B1%95%E5%8D%A1%E5%B0%94%E6%9B%BC%E6%BB%A4%E6%B3%A2%E5%99%A8/" class="archive-article-date">
-  	<time datetime="2020-04-06T13:54:34.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-06</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2020/04/06/%E6%89%A9%E5%B1%95%E5%8D%A1%E5%B0%94%E6%9B%BC%E6%BB%A4%E6%B3%A2%E5%99%A8/">扩展卡尔曼滤波器</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">APM</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-  
-    </div></section>
-  
-
-    
-    <nav id="page-nav">
-      <span class="page-number current">1</span><a class="page-number" href="/archives/2020/04/page/2/">2</a><a class="extend next" rel="next" href="/archives/2020/04/page/2/">Next &amp;raquo;</a>
-    </nav>
   
 
 
@@ -609,8 +479,8 @@
 	var yiliaConfig = {
 		mathjax: true,
 		isHome: false,
-		isPost: false,
-		isArchive: true,
+		isPost: true,
+		isArchive: false,
 		isTag: false,
 		isCategory: false,
 		open_in_new: false,
