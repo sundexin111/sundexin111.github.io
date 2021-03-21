@@ -186,30 +186,441 @@
           <div id="js-content" class="content-ll">
             
   
-    <article id="post-quadplane飞行模式" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-Messages (common) · MAVLink Developer Gu" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2020/04/28/quadplane%E9%A3%9E%E8%A1%8C%E6%A8%A1%E5%BC%8F/">quadplane飞行模式</a>
+      <a class="article-title" href="/2020/10/06/Messages%20(common)%20%C2%B7%20MAVLink%20Developer%20Gu/">Messages (common) · MAVLink Developer Gu</a>
     </h1>
   
 
         
-        <a href="/2020/04/28/quadplane%E9%A3%9E%E8%A1%8C%E6%A8%A1%E5%BC%8F/" class="archive-article-date">
-  	<time datetime="2020-04-28T13:48:36.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-28</time>
+        <a href="/2020/10/06/Messages%20(common)%20%C2%B7%20MAVLink%20Developer%20Gu/" class="archive-article-date">
+  	<time datetime="2020-10-06T05:21:12.694Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-10-06</time>
 </a>
         
       </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>本文转载于<a href="https://blog.csdn.net/u012814946/article/details/79794254" target="_blank" rel="noopener">(https://blog.csdn.net/u012814946/article/details/79794254</a></p>
-<p>APM中quadplane是ArduPlane下的一个分支，代表的是倾转四旋翼的固件。本文主要介绍倾转四旋翼的飞行模式。<br>
+        <h1 id="Mavlink协议简介"><a href="#Mavlink协议简介" class="headerlink" title="Mavlink协议简介"></a>Mavlink协议简介</h1><hr>
+<ul>
+<li><a href="#mavlink协议简介">Mavlink协议简介</a><ul>
+<li><a href="#一mavlink协议">一、Mavlink协议</a></li>
+<li><a href="#二数据结构">二、数据结构</a></li>
+<li><a href="#三协议支持的数据类型">三、协议支持的数据类型</a></li>
+<li><a href="#四性能">四、性能</a></li>
+<li><a href="#五航点协议">五、航点协议</a><ul>
+<li><a href="#1-读取mav的航点列表">1. 读取MAV的航点列表</a></li>
+<li><a href="#2-写mav的航点列表">2. 写MAV的航点列表</a></li>
+<li><a href="#3-清除mav的航点列表">3. 清除MAV的航点列表</a></li>
+<li><a href="#4-设置当前mav航点">4. 设置当前MAV航点</a></li>
+</ul>
+</li>
+<li><a href="#六参数的读写">六、参数的读写</a><ul>
+<li><a href="#1-读取参数列表">1. 读取参数列表</a></li>
+<li><a href="#2-读取单个参数">2. 读取单个参数</a></li>
+<li><a href="#3-写参数">3. 写参数</a></li>
+</ul>
+</li>
+<li><a href="#七增加新的mavlink消息">七、增加新的mavlink消息</a><ul>
+<li><a href="#1-xml文件中消息的定义">1. XML文件中消息的定义</a></li>
+<li><a href="#2-建立消息定义文件">2. 建立消息定义文件</a></li>
+<li><a href="#3-编绎xml文件">3. 编绎XML文件</a></li>
+</ul>
+</li>
+<li><a href="#八消息的发送与解析">八、消息的发送与解析</a></li>
+<li><a href="#九通用的mavlink消息">九、通用的Mavlink消息</a></li>
+<li><a href="#参考资料">参考资料</a></li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="一、Mavlink协议"><a href="#一、Mavlink协议" class="headerlink" title="一、Mavlink协议"></a>一、Mavlink协议</h2><p>MAVLink通讯协议是一个为微型飞行器设计的非常轻巧的、只由<strong>头文件</strong>构成的信息编组库。它可以通过串口非常高效地封装C结构数据，并将这些数据包发送至地面控制站。该协议被PX4, PIXHAWK, APM和Parrot AR.Drone平台所广泛测试并在以上的项目中作为MCU/IMU间以及Linux进程和地面站链路通信间的主干通信协议。</p>
+<blockquote>
+<p>MAVLink最初由<strong>LorenzMeier</strong>根据LGPL许可在2009年初发表。</p>
+</blockquote>
+<h2 id="二、数据结构"><a href="#二、数据结构" class="headerlink" title="二、数据结构"></a>二、数据结构</h2><p>Mavlink传输时基本单位是消息帧，消息帧的结构如下：<br><img src="http://static.zybuluo.com/luckfkue/i74s1ew5kfth0wxje8m0vubi/image_1at2p94qd1mu6174hrpi17kemg99.png" alt="image_1at2p94qd1mu6174hrpi17kemg99.png-53kB"></p>
+<p>索引</p>
+<p>名称</p>
+<p>内容</p>
+<p>值</p>
+<p>含义</p>
+<p>0</p>
+<p>STX</p>
+<p>数据包起始标志</p>
+<p>0xFE(v1.0)/0x55(v0.9)</p>
+<p>标识新消息的开始</p>
+<p>1</p>
+<p>LEN</p>
+<p>有效载荷长度</p>
+<p>0-255</p>
+<p>标识该消息包中负载长度</p>
+<p>2</p>
+<p>SEQ</p>
+<p>数据包序列号</p>
+<p>0-255</p>
+<p>消息发送序列号，用于检测数据包的丢失</p>
+<p>3</p>
+<p>SYS</p>
+<p>系统ID</p>
+<p>1-255</p>
+<p>发送该包的系统ID。能够区分在同一网络中不同的MAV</p>
+<p>4</p>
+<p>COMP</p>
+<p>组件ID</p>
+<p>0-255</p>
+<p>发送该包的组件ID,能够区分同一系统的不同发送设备。如：IMU和AutoPilot</p>
+<p>5</p>
+<p>MSG</p>
+<p>消息ID</p>
+<p>0-255</p>
+<p>该ID定义了有效负载的“含义”以及负载应被如何正确的解码</p>
+<p>6至n+6</p>
+<p>PAYLOAD</p>
+<p>消息载荷</p>
+<p>0-255 字节</p>
+<p>消息内部的负载信息</p>
+<p>n+7</p>
+<p>CKA</p>
+<p>校验位（低8位）</p>
+<p>-</p>
+<p>CRC校验码</p>
+<p>n+8</p>
+<p>CKB</p>
+<p>校验位（高8位）</p>
+<p>-</p>
+<p>CRC校验码</p>
+<blockquote>
+<p><strong>注意：</strong>校验码由<strong>crc16</strong>算法得到，算法从消息包的1~n+6字节（不包含STX），还要额外加上个<code>MAVLINK_CRC_EXTRA</code>进行计算得到一个16位的校验码。每个消息的头文件里都包含<code>MAVLINK_CRC_EXTRA</code>，这个 <code>MAVLINK_CRC_EXTRA</code>是由生成mavlink代码的xml文件生成的，加入这个额外的东西是为了当飞行器和地面站使用不同版本的mavlink协议时，双方计算得到的校验码会不同，这样不同版本间的mavlink协议就不会在一起正常工作，避免了由于不同版本间通讯时带来的重大潜在问题。</p>
+</blockquote>
+<h2 id="三、协议支持的数据类型"><a href="#三、协议支持的数据类型" class="headerlink" title="三、协议支持的数据类型"></a>三、协议支持的数据类型</h2><p>MAVLink协议支持固定大小的整形数据类型、IEEE754协议规定的单精度浮点型数据，或由以上数据构成的数组（如：<code>char[10]</code>），以及由协议自动添加的MAVLink版本号。具体如下：<br>- <strong>char -</strong> Characters / strings<br>- <strong>uint8_t -</strong> Unsigned 8 bit<br>- <strong>int8_t -</strong> Signed 8 bit<br>- <strong>uint16_t -</strong> Unsigned 16 bit<br>- <strong>int16_t -</strong> Signed 16 bit<br>- <strong>uint32_t -</strong> Unsigned 32 bit<br>- <strong>int32_t -</strong> Signed 32 bit<br>- <strong>uint64_t -</strong> Unsigned 64 bit<br>- <strong>int64_t -</strong> Signed 64 bit<br>- <strong>float -</strong> IEEE 754 single precision floating point number<br>- <strong>double -</strong> IEEE 754 double precision floating point number<br>- <strong>uint8_t_mavlink_version -</strong> 无符号的8位字符自动补充到当前的mavlink版本，它不能被写入，只是读按照8位字符的方式读取。</p>
+<h2 id="四、性能"><a href="#四、性能" class="headerlink" title="四、性能"></a>四、性能</h2><p>Mavlink协议有两方面的特性：<strong>传输速度快</strong>和<strong>安全性高</strong>。协议允许检验消息内容，同样允许检测丢失的消息序列且最少只需要每个包中6个字节的开销来保证。传输实例：</p>
+<p>链接速度</p>
+<p>硬件</p>
+<p>更新速率</p>
+<p>负载</p>
+<p>浮点值</p>
+<p>115200 baud</p>
+<p>XBee Pro 2.4 GHz</p>
+<p>50 Hz</p>
+<p>224 bytes</p>
+<p>56</p>
+<p>115200 baud</p>
+<p>XBee Pro 2.4 GHz</p>
+<p>100 Hz</p>
+<p>109 bytes</p>
+<p>27</p>
+<p>57600 baud</p>
+<p>XBee Pro 2.4 GHz</p>
+<p>100 Hz</p>
+<p>51 bytes</p>
+<p>12</p>
+<p>9600 baud</p>
+<p>XBee Pro XSC 900</p>
+<p>50 Hz</p>
+<p>13 bytes</p>
+<p>3</p>
+<p>9600 baud</p>
+<p>XBee Pro XSC 900</p>
+<p>20 Hz</p>
+<p>42 bytes</p>
+<p>10</p>
+<h2 id="五、航点协议"><a href="#五、航点协议" class="headerlink" title="五、航点协议"></a>五、航点协议</h2><p>航点协议描述了航点是如何发送和读取的。其目标是在发送端和接收端确保建立一种连续稳定的状态，以达到每个使用MAVLINK的MAV能够和QGC通信并交换或更新它的航点。</p>
+<blockquote>
+<p>使用航点协议时，除了应答消息之外的其他信息在被发送之后，发送端的部件就会启动一个定时器。如果在特定的时间内，没有收到响应则请求的消息将会被重新发送一次。该重传过程会重复数次，如果在最后一次的重传超时后仍然没有收到相应，则认定该项事务失败。该重传机制意味着所有的部件必须能够处理重复的消息。</p>
+</blockquote>
+<h3 id="1-读取MAV的航点列表"><a href="#1-读取MAV的航点列表" class="headerlink" title="1. 读取MAV的航点列表"></a>1. 读取MAV的航点列表</h3><p>读取过程如下：</p>
+<blockquote>
+<ul>
+<li>QGC端先发送一个<code>WAYPOINT_REQUEST_LIST</code>消息给MAV；MAV则会回一个<code>WAYPOINT_COUNT</code>消息，该消息描述了MAV的航点列表中航点的数量</li>
+<li>QGC端发送一个<code>WAYPOINT_REQUEST(WP0)</code>的消息请求得到第1个航点的信息；MAV则会回对应的包含航点数据的消息<code>WAYPOINT(WP0)</code></li>
+<li>重复步骤2得到第2、3、4…直到最后一个航点的数据</li>
+<li>当全部接收完所有的航点消息后，QGC端会发送一个<code>WAYPOINT_ACK</code>消息给MAV，用来表明整个读取过程结束了</li>
+</ul>
+</blockquote>
+<p>整个过程如下图所示：</p>
+<p><img src="http://static.zybuluo.com/luckfkue/o1jgqjrp57h1wj32awkq6sgg/image_1at35rrnk2dntgm1h0v9hs2ttm.png" alt="image_1at35rrnk2dntgm1h0v9hs2ttm.png-129.6kB"></p>
+<h3 id="2-写MAV的航点列表"><a href="#2-写MAV的航点列表" class="headerlink" title="2. 写MAV的航点列表"></a>2. 写MAV的航点列表</h3><p>写入过程为：</p>
+<blockquote>
+<ul>
+<li>QGC先将航点列表中航点的数量以<code>WAYPOINT_COUNT(N)</code>消息发送给MAV；MAV则回应请求第1个航点的消息<code>WAYPOINT_REQUEST(WP0)</code></li>
+<li>QGC接收到第1个航点的请求消息后，将包含第1个航点的数据以<code>WAYPOINT(WP0)</code>消息发送给MAV；MAV收到后继续请求下一个航点的信息</li>
+<li>当MAV接收到最后一个航点的信息后，MAV会向QGC发送一个<code>WAYPOINT_ACK</code>消息来表明整个事件的结束</li>
+</ul>
+</blockquote>
+<p>整个过程如下图所示：<br><img src="http://static.zybuluo.com/luckfkue/uk7megu48ux3q6d7tc1w0sdo/image_1at37mmhbvfc1rn91hpg1u2p12bn13.png" alt="image_1at37mmhbvfc1rn91hpg1u2p12bn13.png-118.3kB"></p>
+<h3 id="3-清除MAV的航点列表"><a href="#3-清除MAV的航点列表" class="headerlink" title="3. 清除MAV的航点列表"></a>3. 清除MAV的航点列表</h3><p><img src="http://static.zybuluo.com/luckfkue/t317li1dn5eryaxw9g4jkgd9/image_1at3dn4h8i7q1vdk15eo1vo9us51g.png" alt="image_1at3dn4h8i7q1vdk15eo1vo9us51g.png-37.2kB"></p>
+<h3 id="4-设置当前MAV航点"><a href="#4-设置当前MAV航点" class="headerlink" title="4. 设置当前MAV航点"></a>4. 设置当前MAV航点</h3><p><img src="http://static.zybuluo.com/luckfkue/u20icfwmktdppkdx57oiz305/image_1at3dpsrp1tnt184agdc1ck02rv1t.png" alt="image_1at3dpsrp1tnt184agdc1ck02rv1t.png-41.5kB"></p>
+<h2 id="六、参数的读写"><a href="#六、参数的读写" class="headerlink" title="六、参数的读写"></a>六、参数的读写</h2><h3 id="1-读取参数列表"><a href="#1-读取参数列表" class="headerlink" title="1. 读取参数列表"></a>1. 读取参数列表</h3><p><img src="http://static.zybuluo.com/luckfkue/d2xn5z6f6t4xp0xyj8ncp77m/image_1at3esne217gg1kn21mo51uknucg2a.png" alt="image_1at3esne217gg1kn21mo51uknucg2a.png-97.2kB"></p>
+<h3 id="2-读取单个参数"><a href="#2-读取单个参数" class="headerlink" title="2. 读取单个参数"></a>2. 读取单个参数</h3><p>单个参数可以通过<code>PARAM_REQUEST_READ</code>消息来读取</p>
+<h3 id="3-写参数"><a href="#3-写参数" class="headerlink" title="3. 写参数"></a>3. 写参数</h3><p><img src="http://static.zybuluo.com/luckfkue/yf41b2hnrix03mxm0347fwld/image_1at3ev91l1nbvfr41kf71cp01sbu2n.png" alt="image_1at3ev91l1nbvfr41kf71cp01sbu2n.png-67.8kB"></p>
+<h2 id="七、增加新的mavlink消息"><a href="#七、增加新的mavlink消息" class="headerlink" title="七、增加新的mavlink消息"></a>七、增加新的mavlink消息</h2><p>MAVLINK的消息是定义在XML文件中，再被转换成C/C++,C#或Python代码。以心跳消息为例对如何增加新的消息进行说明。</p>
+<blockquote>
+<p><strong>注意：</strong>心跳消息<strong><code>heartbeat</code></strong>是唯一必须被使用的消息，飞行器与地面站相连时，地面站通常是根据心跳消息来判断是否和飞行器失去了联系，所以飞行器端需要以一定频率发送这个心跳包（通常为1HZ）</p>
+</blockquote>
+<h3 id="1-XML文件中消息的定义"><a href="#1-XML文件中消息的定义" class="headerlink" title="1. XML文件中消息的定义"></a>1. XML文件中消息的定义</h3><p>以下代码为在XML文件中心跳消息的定义，来自<code>mavlink/message_definitions/common.xml</code></p>
+<pre><code>&lt;message id=&quot;0&quot; name=&quot;HEARTBEAT&quot;&gt;
+  &lt;description&gt;The heartbeat message shows that a system is present and responding. The type of the MAV and Autopilot hardware allow the receiving system to treat further messages from this system appropriate (e.g. by laying out the user interface based on the autopilot).&lt;/description&gt;
+  &lt;field type=&quot;uint8_t&quot; name=&quot;type&quot;&gt;Type of the MAV (quadrotor, helicopter, etc., up to 15 types, defined in MAV_TYPE ENUM)&lt;/field&gt;
+  &lt;field type=&quot;uint8_t&quot; name=&quot;autopilot&quot;&gt;Autopilot type / class. defined in MAV_CLASS ENUM&lt;/field&gt;
+  &lt;field type=&quot;uint8_t&quot; name=&quot;base_mode&quot;&gt;System mode bitfield, see MAV_MODE_FLAGS ENUM in mavlink/include/mavlink_types.h&lt;/field&gt;
+  &lt;field type=&quot;uint32_t&quot; name=&quot;custom_mode&quot;&gt;Navigation mode bitfield, see MAV_AUTOPILOT_CUSTOM_MODE ENUM for some examples. This field is autopilot-specific.&lt;/field&gt;
+  &lt;field type=&quot;uint8_t&quot; name=&quot;system_status&quot;&gt;System status flag, see MAV_STATUS ENUM&lt;/field&gt;
+  &lt;field type=&quot;uint8_t_mavlink_version&quot; name=&quot;mavlink_version&quot;&gt;MAVLink version&lt;/field&gt;
+&lt;/message&gt;
+</code></pre><p><strong>代码解读：</strong></p>
+<blockquote>
+<ul>
+<li>每条消息都是在<code>&lt;message&gt;&lt;/message&gt;</code>之间定义的</li>
+<li><code>id=&quot;0&quot;</code>表示这条消息的ID或索引是数字0。消息ID的有效数字是从0~255，其中150~240是预留给用户来自定义消息的。</li>
+<li><code>name=&quot;HEARTBEAT&quot;</code>是一个易读的消息名称，只用在定义代码中，消息传输时不会发送这个名字，消息本身只依赖于消息ID。</li>
+<li>定义中的<code>&lt;description&gt;&lt;/description&gt;</code>表示消息的描述，消息的描述很重要，但不是必须的。消息的描述可以让用户明确该消息的含义和用途。</li>
+<li>定义中的<code>&lt;field&gt;&lt;/field&gt;</code>表示消息的字段，类似于C中结构体的变量。消息的字段可以是有无符号的8位、16位、32位、64位的整型，也可以是单双精度的IEEE754浮点型。</li>
+<li><code>type=&quot;uint8_t&quot;</code>表示该字段为无符号的8位整型。如果你想定义一个数组可以这样定义：<code>type=&quot;uint8_t[5]&quot;</code> ,<code>uint8_t_mavlink_version</code>是一个特殊的类型，它是一个无符号的8位整型，用来表示当前使用的mavlink协议的版本号，该字段是只读的，当消息发送时会自动被填充。</li>
+</ul>
+</blockquote>
+<h3 id="2-建立消息定义文件"><a href="#2-建立消息定义文件" class="headerlink" title="2. 建立消息定义文件"></a>2. 建立消息定义文件</h3><p>如果你想建立一个单独的消息定义文件，就像<code>commn.xml</code>或其它位于<code>message_definitions</code>文件夹下的XML文件一样。你可以像下面代码一样定义，注意一定要包含版本号;如果这个XML文件和<code>commn.xml</code>位于同一个路径下，那么最终生成的MAVLINK代码中会包含<code>commn.xml</code>的内容。</p>
+<pre><code>&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;mavlink&gt;
+        &lt;include&gt;common.xml&lt;/include&gt;
+        &lt;!-- NOTE: If the included file already contains a version tag, remove the version tag here, else uncomment to enable. --&gt;
+    &lt;!--&lt;version&gt;3&lt;/version&gt;--&gt;
+    &lt;enums&gt;
+    &lt;/enums&gt;
+    &lt;messages&gt;
+        &lt;message id=&quot;150&quot; name=&quot;RUDDER_RAW&quot;&gt;
+            &lt;description&gt;This message encodes all of the raw rudder sensor data from the USV.&lt;/description&gt;
+            &lt;field type=&quot;uint16_t&quot; name=&quot;position&quot;&gt;The raw data from the position sensor, generally a potentiometer.&lt;/field&gt;
+            &lt;field type=&quot;uint8_t&quot; name=&quot;port_limit&quot;&gt;Status of the rudder limit sensor, port side. 0 indicates off and 1 indicates that the limit is hit. If this sensor is inactive set to 0xFF.&lt;/field&gt;
+            &lt;field type=&quot;uint8_t&quot; name=&quot;center_limit&quot;&gt;Status of the rudder limit sensor, port side. 0 indicates off and 1 indicates that the limit is hit. If this sensor is inactive set to 0xFF.&lt;/field&gt;
+            &lt;field type=&quot;uint8_t&quot; name=&quot;starboard_limit&quot;&gt;Status of the rudder limit sensor, starboard side. 0 indicates off and 1 indicates that the limit is hit. If this sensor is inactive set to 0xFF.&lt;/field&gt;
+        &lt;/message&gt;
+    &lt;/messages&gt;
+&lt;/mavlink&gt;
+</code></pre><h3 id="3-编绎XML文件"><a href="#3-编绎XML文件" class="headerlink" title="3. 编绎XML文件"></a>3. 编绎XML文件</h3><p>在完成消息定义文件后，它可被编绎成C代码，编绎步骤如下：</p>
+<blockquote>
+<ul>
+<li>先下载一个代码生成器：<a href="https://github.com/mavlink/mavlink" target="_blank" rel="noopener">https://github.com/mavlink/mavlink</a></li>
+<li>然后运行里面的<code>mavgenerate.py</code>，运行这个文件需要先安装<strong>Python2.7+:</strong><br><a href="http://rj.baidu.com/soft/detail/17016.html?ald" target="_blank" rel="noopener">http://rj.baidu.com/soft/detail/17016.html?ald</a></li>
+<li>装载<code>mavlink/message_definitions</code>下的XML文件</li>
+<li>选择输出路径，如<code>mavlink/include</code></li>
+<li>点击“Generate”</li>
+</ul>
+</blockquote>
+<p>编绎完成后，以心跳消息为例，你会在相应的头文件中得到如下C结构体代码：</p>
+<pre><code>#define MAVLINK_MSG_ID_HEARTBEAT 0
+
+typedef struct __mavlink_heartbeat_t
+{
+ uint32_t custom_mode; ///&lt; Navigation mode bitfield, see MAV_AUTOPILOT_CUSTOM_MODE ENUM for some examples. This field is autopilot-specific.
+ uint8_t type; ///&lt; Type of the MAV (quadrotor, helicopter, etc., up to 15 types, defined in MAV_TYPE ENUM)
+ uint8_t autopilot; ///&lt; Autopilot type / class. defined in MAV_CLASS ENUM
+ uint8_t base_mode; ///&lt; System mode bitfield, see MAV_MODE_FLAGS ENUM in mavlink/include/mavlink_types.h
+ uint8_t system_status; ///&lt; System status flag, see MAV_STATUS ENUM
+ uint8_t mavlink_version; ///&lt; MAVLink version
+} mavlink_heartbeat_t;
+</code></pre><p>也会自动生成相应的打包函数</p>
+<pre><code>  /**
+   * @brief Pack a heartbeat message
+ * @param system_id ID of this system
+ * @param component_id ID of this component (e.g. 200 for IMU)
+ * @param msg The MAVLink message to compress the data into
+ *
+ * @param type Type of the MAV (quadrotor, helicopter, etc., up to 15 types, defined in MAV_TYPE ENUM)
+ * @param autopilot Autopilot type / class. defined in MAV_CLASS ENUM
+ * @param base_mode System mode bitfield, see MAV_MODE_FLAGS ENUM in mavlink/include/mavlink_types.h
+ * @param custom_mode Navigation mode bitfield, see MAV_AUTOPILOT_CUSTOM_MODE ENUM for some examples. This field is autopilot-specific.
+ * @param system_status System status flag, see MAV_STATUS ENUM
+ * @return length of the message in bytes (excluding serial stream start sign)
+ */
+static inline uint16_t mavlink_msg_heartbeat_pack(uint8_t system_id, uint8_t component_id, mavlink_message_t* msg,
+                               uint8_t type, uint8_t autopilot, uint8_t base_mode, uint32_t custom_mode, uint8_t system_status)
+
+
+/**
+ * @brief Encode a heartbeat struct into a message
+ *
+ * @param system_id ID of this system
+ * @param component_id ID of this component (e.g. 200 for IMU)
+ * @param msg The MAVLink message to compress the data into
+ * @param heartbeat C-struct to read the message contents from
+ */
+static inline uint16_t mavlink_msg_heartbeat_encode(uint8_t system_id, uint8_t component_id, mavlink_message_t* msg, const mavlink_heartbeat_t* heartbeat)
+</code></pre><p>当然也会生成解析函数</p>
+<pre><code>**
+ * @brief Decode a heartbeat message into a struct
+ *
+ * @param msg The message to decode
+ * @param heartbeat C-struct to decode the message contents into
+ */
+static inline void mavlink_msg_heartbeat_decode(const mavlink_message_t* msg, mavlink_heartbeat_t* heartbeat)
+</code></pre><h2 id="八、消息的发送与解析"><a href="#八、消息的发送与解析" class="headerlink" title="八、消息的发送与解析"></a>八、消息的发送与解析</h2><p>以心跳包为例，对如何<strong>发送消息</strong>和<strong>解析消息</strong>进行说明，首先打开<code>mavlink_msg_heartbeat.h</code>头文件，在这个头文件中包含了结构体的定义，打包函数，发送函数，接收函数和解析函数。我们通常要使用的是<strong>发送函数和接收函数</strong>。以下为发送函数</p>
+<pre><code>static inline void mavlink_msg_heartbeat_send(mavlink_channel_t chan, uint8_t type, uint8_t autopilot, uint8_t base_mode, uint32_t custom_mode, uint8_t system_status)
+{
+#if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS //采用大端模式，则需要进行byte swap
+    char buf[MAVLINK_MSG_ID_HEARTBEAT_LEN];
+    _mav_put_uint32_t(buf, 0, custom_mode);
+    _mav_put_uint8_t(buf, 4, type);
+    _mav_put_uint8_t(buf, 5, autopilot);
+    _mav_put_uint8_t(buf, 6, base_mode);
+    _mav_put_uint8_t(buf, 7, system_status);
+    _mav_put_uint8_t(buf, 8, 3);
+
+#if MAVLINK_CRC_EXTRA
+    _mav_finalize_message_chan_send(chan, MAVLINK_MSG_ID_HEARTBEAT, buf, MAVLINK_MSG_ID_HEARTBEAT_LEN, MAVLINK_MSG_ID_HEARTBEAT_CRC);
+#else
+    _mav_finalize_message_chan_send(chan, MAVLINK_MSG_ID_HEARTBEAT, buf, MAVLINK_MSG_ID_HEARTBEAT_LEN);
+#endif
+#else                                               // 小端模式（mavlink默认的模式）
+    mavlink_heartbeat_t packet;
+    packet.custom_mode = custom_mode;
+    packet.type = type;
+    packet.autopilot = autopilot;
+    packet.base_mode = base_mode;
+    packet.system_status = system_status;
+    packet.mavlink_version = 3;
+
+#if MAVLINK_CRC_EXTRA
+    _mav_finalize_message_chan_send(chan, MAVLINK_MSG_ID_HEARTBEAT, (const char *)&amp;packet, MAVLINK_MSG_ID_HEARTBEAT_LEN, MAVLINK_MSG_ID_HEARTBEAT_CRC);// 将消息完整打包并发送
+#else
+    _mav_finalize_message_chan_send(chan, MAVLINK_MSG_ID_HEARTBEAT, (const char *)&amp;packet, MAVLINK_MSG_ID_HEARTBEAT_LEN);
+#endif
+#endif
+}
+</code></pre><p>接下来进入打包发送函数，该函数位于<code>mavlink_helper.h</code>中</p>
+<pre><code>#if MAVLINK_CRC_EXTRA//默认
+MAVLINK_HELPER void _mav_finalize_message_chan_send(mavlink_channel_t chan, uint8_t msgid, const char *packet, uint8_t length, uint8_t crc_extra)
+#else
+MAVLINK_HELPER void _mav_finalize_message_chan_send(mavlink_channel_t chan, uint8_t msgid, const char *packet, uint8_t length)
+#endif
+{
+    uint16_t checksum;
+    uint8_t buf[MAVLINK_NUM_HEADER_BYTES];
+    uint8_t ck[2];
+    mavlink_status_t *status = mavlink_get_channel_status(chan);
+    buf[0] = MAVLINK_STX;                   // 加入STX
+    buf[1] = length;                        // 加入LEN
+    buf[2] = status-&gt;current_tx_seq;        // 加入SEQ
+    buf[3] = mavlink_system.sysid;          // 加入SYS
+    buf[4] = mavlink_system.compid;         // 加入COMP
+    buf[5] = msgid;                         // 加入MSG
+    status-&gt;current_tx_seq++;               // 消息序列号加1
+    checksum = crc_calculate((const uint8_t*)&amp;buf[1], MAVLINK_CORE_HEADER_LEN);//计算非载荷的CRC校验码（不包含STX）
+    crc_accumulate_buffer(&amp;checksum, packet, length);//计算载荷的CRC校验码
+#if MAVLINK_CRC_EXTRA
+    crc_accumulate(crc_extra, &amp;checksum);// 计算crc_extra的CRC校验码
+#endif
+    ck[0] = (uint8_t)(checksum &amp; 0xFF);// 低8位CRC校验码
+    ck[1] = (uint8_t)(checksum &gt;&gt; 8);  // 高8位CRC校验码
+
+    MAVLINK_START_UART_SEND(chan, MAVLINK_NUM_NON_PAYLOAD_BYTES + (uint16_t)length);// 空宏，无作用
+    _mavlink_send_uart(chan, (const char *)buf, MAVLINK_NUM_HEADER_BYTES);//向串口发送载荷之前的部分
+    _mavlink_send_uart(chan, packet, length);//发送载荷部分
+    _mavlink_send_uart(chan, (const char *)ck, 2);// 发送CRC校验码
+    MAVLINK_END_UART_SEND(chan, MAVLINK_NUM_NON_PAYLOAD_BYTES + (uint16_t)length);// 空宏，无作用
+}
+</code></pre><p>到此，一个消息就发送完毕，接下来进入接收端的解析过程，消息的解析函数也位于<code>mavlink_helper.h</code>中（由于该函数太长，故略）。</p>
+<pre><code>MAVLINK_HELPER uint8_t mavlink_parse_char(uint8_t chan, uint8_t c, mavlink_message_t* r_message, mavlink_status_t* r_mavlink_status)
+</code></pre><blockquote>
+<p><strong>注意：</strong>解析时，会对从串口收到的每一个字节进行识别，如果为<strong>STX</strong>，则开始进行消息解码，将其以及此后的每个字节都存入一个消息结构体中，并计算对应的CRC校验码。如果最后的CRC校验码能匹配上，则将整个消息的数据存入<code>r_message</code>结构体中，如果解析完成一个消息，则会返回一个真值；然后继续检验字节是否为<strong>STX</strong>，循环解析。</p>
+</blockquote>
+<p>解析完成后，可以对<code>r_messsage</code>结构体中的信息进行识别，<code>r_message</code>结构体就是相当于一个消息帧，包含了消息帧的所有信息：</p>
+<pre><code>typedef struct __mavlink_message {
+    uint16_t checksum; ///&lt; sent at end of packet
+    uint8_t magic;   ///&lt; protocol magic marker     是STX
+    uint8_t len;     ///&lt; Length of payload
+    uint8_t seq;     ///&lt; Sequence of packet
+    uint8_t sysid;   ///&lt; ID of message sender system/aircraft
+    uint8_t compid;  ///&lt; ID of the message sender component
+    uint8_t msgid;   ///&lt; ID of message in payload
+    uint64_t payload64[(MAVLINK_MAX_PAYLOAD_LEN+MAVLINK_NUM_CHECKSUM_BYTES+7)/8];// 除以8是因为uint64是8个字节的
+} mavlink_message_t;
+</code></pre><p>如果<code>r_message</code>中的<code>msgid == MAVLINK_MSG_ID_HEARTBEAT</code>,则可调用<code>mavlink_msg_heartbeat.h</code>头文件中的接收函数去得到相应要得到的变量，如</p>
+<pre><code>static inline uint8_t mavlink_msg_heartbeat_get_system_status(const mavlink_message_t* msg)
+{
+    return _MAV_RETURN_uint8_t(msg,  7);
+}
+</code></pre><p>调用该函数即可得到<code>system_status</code>,要得到其它变量的信息直接调用相关函数即可，至此，所有的发送和接收完成。</p>
+<h2 id="九、通用的Mavlink消息"><a href="#九、通用的Mavlink消息" class="headerlink" title="九、通用的Mavlink消息"></a>九、通用的Mavlink消息</h2><p>可在这里查看：<a href="http://mavlink.org/messages/common" target="_blank" rel="noopener">Common MAVLink Message Documentation</a><br>在该网页中，包含了mavlink type的枚举和mavlink message，所有的消息编号也即ID，是以蓝色#加数字来表示的</p>
+<hr>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ol>
+<li>MavLink官方网站：<a href="http://qgroundcontrol.org/mavlink/start" target="_blank" rel="noopener">http://qgroundcontrol.org/mavlink/start</a></li>
+<li>Mavlink协议理解Pixhawk APM <a href="http://blog.csdn.net/super_mice/article/details/44836585" target="_blank" rel="noopener">http://blog.csdn.net/super_mice/article/details/44836585</a></li>
+<li>Mavlink-最强大的微型飞行器通信协议 <a href="http://bbs.loveuav.com/thread-36-1-1.html" target="_blank" rel="noopener">http://bbs.loveuav.com/thread-36-1-1.html</a></li>
+<li>维基百科：<a href="https://en.wikipedia.org/wiki/MAVLink" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/MAVLink</a></li>
+<li>Mavlink微型飞行器的通信协议 <a href="http://wenku.baidu.com/view/44b9d4dd50e2524de5187eab.html?from=search" target="_blank" rel="noopener">http://wenku.baidu.com/view/44b9d4dd50e2524de5187eab.html?from=search</a></li>
+</ol>
+<hr>
+<p>tags: mavlink<br><code>2016-09-21 by pengl</code></p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2020/10/06/Messages%20(common)%20%C2%B7%20MAVLink%20Developer%20Gu/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
         
-          <a class="article-more-a" href="/2020/04/28/quadplane%E9%A3%9E%E8%A1%8C%E6%A8%A1%E5%BC%8F/#more">more >></a>
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-在pixhawk下替换IMU" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/08/05/%E5%9C%A8pixhawk%E4%B8%8B%E6%9B%BF%E6%8D%A2IMU/">在pixhawk下替换IMU</a>
+    </h1>
+  
+
+        
+        <a href="/2020/08/05/%E5%9C%A8pixhawk%E4%B8%8B%E6%9B%BF%E6%8D%A2IMU/" class="archive-article-date">
+  	<time datetime="2020-08-05T06:37:48.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-08-05</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h1>
+        
+          <a class="article-more-a" href="/2020/08/05/%E5%9C%A8pixhawk%E4%B8%8B%E6%9B%BF%E6%8D%A2IMU/#more">more >></a>
         
       
 
@@ -233,7 +644,7 @@
 
       
         <p class="article-more-link">
-          <a class="article-more-a" href="/2020/04/28/quadplane%E9%A3%9E%E8%A1%8C%E6%A8%A1%E5%BC%8F/">展开全文 >></a>
+          <a class="article-more-a" href="/2020/08/05/%E5%9C%A8pixhawk%E4%B8%8B%E6%9B%BF%E6%8D%A2IMU/">展开全文 >></a>
         </p>
       
 
@@ -263,31 +674,36 @@
 
 
   
-    <article id="post-直升机飞行原理" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-loiter模式导航" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2020/04/27/%E7%9B%B4%E5%8D%87%E6%9C%BA%E9%A3%9E%E8%A1%8C%E5%8E%9F%E7%90%86/">直升机飞行原理</a>
+      <a class="article-title" href="/2020/07/22/loiter%E6%A8%A1%E5%BC%8F%E5%AF%BC%E8%88%AA/">loiter模式导航</a>
     </h1>
   
 
         
-        <a href="/2020/04/27/%E7%9B%B4%E5%8D%87%E6%9C%BA%E9%A3%9E%E8%A1%8C%E5%8E%9F%E7%90%86/" class="archive-article-date">
-  	<time datetime="2020-04-27T06:12:15.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-27</time>
+        <a href="/2020/07/22/loiter%E6%A8%A1%E5%BC%8F%E5%AF%BC%E8%88%AA/" class="archive-article-date">
+  	<time datetime="2020-07-22T08:09:58.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-07-22</time>
 </a>
         
       </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>本文转载于<a href="https://zhuanlan.zhihu.com/p/35443917" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/35443917</a></p>
-<p>直升机飞行原理涉及空气动力学、飞行力学以及机械构造等很多方面的知识，本文供感兴趣的朋友初步了解直升机飞行的一些基本原理。旋翼的拉力垂直于旋翼椎体的底面，当向上的拉力大于直升机自重，直升机就上升，小于直升机自重，直升机就下降，刚好相等，直升机就悬停。<br>
-        
-          <a class="article-more-a" href="/2020/04/27/%E7%9B%B4%E5%8D%87%E6%9C%BA%E9%A3%9E%E8%A1%8C%E5%8E%9F%E7%90%86/#more">more >></a>
-        
+        <p>四旋翼飞行器在loiter模式（定点模式）在位置控制上即用到了水平位置控制器（update_xy_controller）又用到了竖直位置控制器（update_z_controller）。本文主要分析在定点模式下期望位置坐标，期望速度，实际位置坐标，实际速度的由来，至于姿态控制不做分析。</p>
+<h2 id="水平方向目标位置"><a href="#水平方向目标位置" class="headerlink" title="水平方向目标位置"></a>水平方向目标位置</h2><p>水平目标位置在ardupilot代码中用 <strong>_pos_target.x</strong> 和 <strong>_pos_target.y</strong>来表示，查看一下_pos_target的定义：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Vector3f    _pos_target;            <span class="comment">// target location in cm from home</span></span><br></pre></td></tr></table></figure>
+<p>可以看出四旋翼的目标位置是以家为原点，计算x和y轴坐标，下面具体看一下如何计算x和y轴的坐标：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">AC_PosControl::desired_vel_to_pos</span><span class="params">(<span class="keyword">float</span> nav_dt)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// range check nav_dt</span></span><br><span class="line">    <span class="keyword">if</span> (nav_dt &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// update target position</span></span><br><span class="line">    <span class="keyword">if</span> (_flags.reset_desired_vel_to_pos) &#123;</span><br><span class="line">        _flags.reset_desired_vel_to_pos = <span class="literal">false</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        _pos_target.x += _vel_desired.x * nav_dt;</span><br><span class="line">        _pos_target.y += _vel_desired.y * nav_dt;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看出目标位置是通过目标速度（_vel_desired.x/y）和时间的乘积得来的，那么久需要确定一下目标速度如何得到的,在代码中看到计算目标苏木函数：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// calc_desired_velocity - updates desired velocity (i.e. feed forward) with pilot requested acceleration and fake wind resistance</span></span><br><span class="line"><span class="comment">///		updated velocity sent directly to position controller</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">AC_Loiter::calc_desired_velocity</span><span class="params">(<span class="keyword">float</span> nav_dt)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">float</span> ekfGndSpdLimit, ekfNavVelGainScaler;</span><br><span class="line">    AP::ahrs_navekf().getEkfControlLimits(ekfGndSpdLimit, ekfNavVelGainScaler);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// calculate a loiter speed limit which is the minimum of the value set by the LOITER_SPEED</span></span><br><span class="line">    <span class="comment">// parameter and the value set by the EKF to observe optical flow limits</span></span><br><span class="line">    <span class="keyword">float</span> gnd_speed_limit_cms = MIN(_speed_cms, ekfGndSpdLimit*<span class="number">100.0f</span>);</span><br><span class="line">    gnd_speed_limit_cms = MAX(gnd_speed_limit_cms, LOITER_SPEED_MIN);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">float</span> pilot_acceleration_max = GRAVITY_MSS*<span class="number">100.0f</span> * tanf(radians(get_angle_max_cd()*<span class="number">0.01f</span>));</span><br><span class="line"></span><br><span class="line">    <span class="comment">// range check nav_dt</span></span><br><span class="line">    <span class="keyword">if</span> (nav_dt &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    _pos_control.set_max_speed_xy(gnd_speed_limit_cms);</span><br><span class="line">    _pos_control.set_max_accel_xy(_accel_cmss);</span><br><span class="line">    _pos_control.set_leash_length_xy(LOITER_POS_CORRECTION_MAX);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// get loiters desired velocity from the position controller where it is being stored.</span></span><br><span class="line">    <span class="keyword">const</span> Vector3f &amp;desired_vel_3d = _pos_control.get_desired_velocity();</span><br><span class="line">    <span class="function">Vector2f <span class="title">desired_vel</span><span class="params">(desired_vel_3d.x,desired_vel_3d.y)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// update the desired velocity using our predicted acceleration</span></span><br><span class="line">    desired_vel.x += _predicted_accel.x * nav_dt;</span><br><span class="line">    desired_vel.y += _predicted_accel.y * nav_dt;</span><br><span class="line"></span><br><span class="line">    Vector2f loiter_accel_brake;</span><br><span class="line">    <span class="keyword">float</span> desired_speed = desired_vel.length();</span><br><span class="line">    <span class="keyword">if</span> (!is_zero(desired_speed)) &#123;</span><br><span class="line">        Vector2f desired_vel_norm = desired_vel/desired_speed;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// <span class="doctag">TODO:</span> consider using a velocity squared relationship like</span></span><br><span class="line">        <span class="comment">// pilot_acceleration_max*(desired_speed/gnd_speed_limit_cms)^2;</span></span><br><span class="line">        <span class="comment">// the drag characteristic of a multirotor should be examined to generate a curve</span></span><br><span class="line">        <span class="comment">// we could add a expo function here to fine tune it</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// calculate a drag acceleration based on the desired speed.</span></span><br><span class="line">        <span class="keyword">float</span> drag_decel = pilot_acceleration_max*desired_speed/gnd_speed_limit_cms;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// calculate a braking acceleration if sticks are at zero</span></span><br><span class="line">        <span class="keyword">float</span> loiter_brake_accel = <span class="number">0.0f</span>;</span><br><span class="line">        <span class="keyword">if</span> (_desired_accel.is_zero()) &#123;</span><br><span class="line">            <span class="keyword">if</span> ((AP_HAL::<span class="built_in">millis</span>()-_brake_timer) &gt; _brake_delay * <span class="number">1000.0f</span>) &#123;</span><br><span class="line">                <span class="keyword">float</span> brake_gain = _pos_control.get_vel_xy_pid().kP() * <span class="number">0.5f</span>;</span><br><span class="line">                loiter_brake_accel = constrain_float(AC_AttitudeControl::sqrt_controller(desired_speed, brake_gain, _brake_jerk_max_cmsss, nav_dt), <span class="number">0.0f</span>, _brake_accel_cmss);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            loiter_brake_accel = <span class="number">0.0f</span>;</span><br><span class="line">            _brake_timer = AP_HAL::<span class="built_in">millis</span>();</span><br><span class="line">        &#125;</span><br><span class="line">        _brake_accel += constrain_float(loiter_brake_accel-_brake_accel, -_brake_jerk_max_cmsss*nav_dt, _brake_jerk_max_cmsss*nav_dt);</span><br><span class="line">        loiter_accel_brake = desired_vel_norm*_brake_accel;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// update the desired velocity using the drag and braking accelerations</span></span><br><span class="line">        desired_speed = MAX(desired_speed-(drag_decel+_brake_accel)*nav_dt,<span class="number">0.0f</span>);</span><br><span class="line">        desired_vel = desired_vel_norm*desired_speed;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// add braking to the desired acceleration</span></span><br><span class="line">    _desired_accel -= loiter_accel_brake;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Apply EKF limit to desired velocity -  this limit is calculated by the EKF and adjusted as required to ensure certain sensor limits are respected (eg optical flow sensing)</span></span><br><span class="line">    <span class="keyword">float</span> horizSpdDem = desired_vel.length();</span><br><span class="line">    <span class="keyword">if</span> (horizSpdDem &gt; gnd_speed_limit_cms) &#123;</span><br><span class="line">        desired_vel.x = desired_vel.x * gnd_speed_limit_cms / horizSpdDem;</span><br><span class="line">        desired_vel.y = desired_vel.y * gnd_speed_limit_cms / horizSpdDem;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Limit the velocity to prevent fence violations</span></span><br><span class="line">    <span class="comment">// <span class="doctag">TODO:</span> We need to also limit the _desired_accel</span></span><br><span class="line">    AC_Avoid *_avoid = AP::ac_avoid();</span><br><span class="line">    <span class="keyword">if</span> (_avoid != <span class="literal">nullptr</span>) &#123;</span><br><span class="line">        _avoid-&gt;adjust_velocity(_pos_control.get_pos_xy_p().kP(), _accel_cmss, desired_vel, nav_dt);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// send adjusted feed forward acceleration and velocity back to the Position Controller</span></span><br><span class="line">    _pos_control.set_desired_accel_xy(_desired_accel.x, _desired_accel.y);</span><br><span class="line">    _pos_control.set_desired_velocity_xy(desired_vel.x, desired_vel.y);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>从这个函数中可以得到目标速度，目标速度的形成又需要目标加速度(_predicted_accel.x/y)，这个是通过遥控器指令得到的：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// set pilot desired acceleration in centi-degrees</span></span><br><span class="line"><span class="comment">//   dt should be the time (in seconds) since the last call to this function</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">AC_Loiter::set_pilot_desired_acceleration</span><span class="params">(<span class="keyword">float</span> euler_roll_angle_cd, <span class="keyword">float</span> euler_pitch_angle_cd, <span class="keyword">float</span> dt)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// Convert from centidegrees on public interface to radians</span></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">float</span> euler_roll_angle = radians(euler_roll_angle_cd*<span class="number">0.01f</span>);</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">float</span> euler_pitch_angle = radians(euler_pitch_angle_cd*<span class="number">0.01f</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// convert our desired attitude to an acceleration vector assuming we are hovering</span></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">float</span> pilot_cos_pitch_target = constrain_float(cosf(euler_pitch_angle), <span class="number">0.5f</span>, <span class="number">1.0f</span>);</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">float</span> pilot_accel_rgt_cms = GRAVITY_MSS*<span class="number">100.0f</span> * tanf(euler_roll_angle)/pilot_cos_pitch_target;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">float</span> pilot_accel_fwd_cms = -GRAVITY_MSS*<span class="number">100.0f</span> * tanf(euler_pitch_angle);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// rotate acceleration vectors input to lat/lon frame</span></span><br><span class="line">    _desired_accel.x = (pilot_accel_fwd_cms*_ahrs.cos_yaw() - pilot_accel_rgt_cms*_ahrs.sin_yaw());</span><br><span class="line">    _desired_accel.y = (pilot_accel_fwd_cms*_ahrs.sin_yaw() + pilot_accel_rgt_cms*_ahrs.cos_yaw());</span><br><span class="line"></span><br><span class="line">    <span class="comment">// difference between where we think we should be and where we want to be</span></span><br><span class="line">    <span class="function">Vector2f <span class="title">angle_error</span><span class="params">(wrap_PI(euler_roll_angle - _predicted_euler_angle.x), wrap_PI(euler_pitch_angle - _predicted_euler_angle.y))</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// calculate the angular velocity that we would expect given our desired and predicted attitude</span></span><br><span class="line">    _attitude_control.input_shaping_rate_predictor(angle_error, _predicted_euler_rate, dt);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// update our predicted attitude based on our predicted angular velocity</span></span><br><span class="line">    _predicted_euler_angle += _predicted_euler_rate * dt;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// convert our predicted attitude to an acceleration vector assuming we are hovering</span></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">float</span> pilot_predicted_cos_pitch_target = cosf(_predicted_euler_angle.y);</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">float</span> pilot_predicted_accel_rgt_cms = GRAVITY_MSS*<span class="number">100.0f</span> * tanf(_predicted_euler_angle.x)/pilot_predicted_cos_pitch_target;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">float</span> pilot_predicted_accel_fwd_cms = -GRAVITY_MSS*<span class="number">100.0f</span> * tanf(_predicted_euler_angle.y);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// rotate acceleration vectors input to lat/lon frame</span></span><br><span class="line">    _predicted_accel.x = (pilot_predicted_accel_fwd_cms*_ahrs.cos_yaw() - pilot_predicted_accel_rgt_cms*_ahrs.sin_yaw());</span><br><span class="line">    _predicted_accel.y = (pilot_predicted_accel_fwd_cms*_ahrs.sin_yaw() + pilot_predicted_accel_rgt_cms*_ahrs.cos_yaw());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>这样就形成了一套完成的控制链：<br><img src="https://i.loli.net/2020/07/22/HQCeqMy5EXvFjJD.png" alt="水平控制链.png"></p>
+<p>接下来运行水平位置控制器：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// run horizontal position controller correcting position and velocity</span></span><br><span class="line"><span class="comment">///     converts position (_pos_target) to target velocity (_vel_target)</span></span><br><span class="line"><span class="comment">///     desired velocity (_vel_desired) is combined into final target velocity</span></span><br><span class="line"><span class="comment">///     converts desired velocities in lat/lon directions to accelerations in lat/lon frame</span></span><br><span class="line"><span class="comment">///     converts desired accelerations provided in lat/lon frame to roll/pitch angles</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">AC_PosControl::run_xy_controller</span><span class="params">(<span class="keyword">float</span> dt)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">float</span> ekfGndSpdLimit, ekfNavVelGainScaler;</span><br><span class="line">    AP::ahrs_navekf().getEkfControlLimits(ekfGndSpdLimit, ekfNavVelGainScaler);</span><br><span class="line"></span><br><span class="line">    Vector3f curr_pos = _inav.get_position();</span><br><span class="line">    <span class="keyword">float</span> kP = ekfNavVelGainScaler * _p_pos_xy.kP(); <span class="comment">// scale gains to compensate for noisy optical flow measurement in the EKF</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// avoid divide by zero</span></span><br><span class="line">    <span class="keyword">if</span> (kP &lt;= <span class="number">0.0f</span>) &#123;</span><br><span class="line">        _vel_target.x = <span class="number">0.0f</span>;</span><br><span class="line">        _vel_target.y = <span class="number">0.0f</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// calculate distance error</span></span><br><span class="line">        _pos_error.x = _pos_target.x - curr_pos.x;</span><br><span class="line">        _pos_error.y = _pos_target.y - curr_pos.y;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Constrain _pos_error and target position</span></span><br><span class="line">        <span class="comment">// Constrain the maximum length of _vel_target to the maximum position correction velocity</span></span><br><span class="line">        <span class="comment">// <span class="doctag">TODO:</span> replace the leash length with a user definable maximum position correction</span></span><br><span class="line">        <span class="keyword">if</span> (limit_vector_length(_pos_error.x, _pos_error.y, _leash)) &#123;</span><br><span class="line">            _pos_target.x = curr_pos.x + _pos_error.x;</span><br><span class="line">            _pos_target.y = curr_pos.y + _pos_error.y;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        _vel_target = sqrt_controller(_pos_error, kP, _accel_cms);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// add velocity feed-forward</span></span><br><span class="line">    _vel_target.x += _vel_desired.x;</span><br><span class="line">    _vel_target.y += _vel_desired.y;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// the following section converts desired velocities in lat/lon directions to accelerations in lat/lon frame</span></span><br><span class="line"></span><br><span class="line">    Vector2f accel_target, vel_xy_p, vel_xy_i, vel_xy_d;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// check if vehicle velocity is being overridden</span></span><br><span class="line">    <span class="keyword">if</span> (_flags.vehicle_horiz_vel_override) &#123;</span><br><span class="line">        _flags.vehicle_horiz_vel_override = <span class="literal">false</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        _vehicle_horiz_vel.x = _inav.get_velocity().x;</span><br><span class="line">        _vehicle_horiz_vel.y = _inav.get_velocity().y;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// calculate velocity error</span></span><br><span class="line">    _vel_error.x = _vel_target.x - _vehicle_horiz_vel.x;</span><br><span class="line">    _vel_error.y = _vel_target.y - _vehicle_horiz_vel.y;</span><br><span class="line">    <span class="comment">// <span class="doctag">TODO:</span> constrain velocity error and velocity target</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// call pi controller</span></span><br><span class="line">    _pid_vel_xy.set_input(_vel_error);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// get p</span></span><br><span class="line">    vel_xy_p = _pid_vel_xy.get_p();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// update i term if we have not hit the accel or throttle limits OR the i term will reduce</span></span><br><span class="line">    <span class="comment">// <span class="doctag">TODO:</span> move limit handling into the PI and PID controller</span></span><br><span class="line">    <span class="keyword">if</span> (!_limit.accel_xy &amp;&amp; !_motors.limit.throttle_upper) &#123;</span><br><span class="line">        vel_xy_i = _pid_vel_xy.get_i();</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        vel_xy_i = _pid_vel_xy.get_i_shrink();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// get d</span></span><br><span class="line">    vel_xy_d = _pid_vel_xy.get_d();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// acceleration to correct for velocity error and scale PID output to compensate for optical flow measurement induced EKF noise</span></span><br><span class="line">    accel_target.x = (vel_xy_p.x + vel_xy_i.x + vel_xy_d.x) * ekfNavVelGainScaler;</span><br><span class="line">    accel_target.y = (vel_xy_p.y + vel_xy_i.y + vel_xy_d.y) * ekfNavVelGainScaler;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// reset accel to current desired acceleration</span></span><br><span class="line">    <span class="keyword">if</span> (_flags.reset_accel_to_lean_xy) &#123;</span><br><span class="line">        _accel_target_filter.reset(Vector2f(accel_target.x, accel_target.y));</span><br><span class="line">        _flags.reset_accel_to_lean_xy = <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// filter correction acceleration</span></span><br><span class="line">    _accel_target_filter.set_cutoff_frequency(MIN(_accel_xy_filt_hz, <span class="number">5.0f</span> * ekfNavVelGainScaler));</span><br><span class="line">    _accel_target_filter.apply(accel_target, dt);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// pass the correction acceleration to the target acceleration output</span></span><br><span class="line">    _accel_target.x = _accel_target_filter.<span class="built_in">get</span>().x;</span><br><span class="line">    _accel_target.y = _accel_target_filter.<span class="built_in">get</span>().y;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Add feed forward into the target acceleration output</span></span><br><span class="line">    _accel_target.x += _accel_desired.x;</span><br><span class="line">    _accel_target.y += _accel_desired.y;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// the following section converts desired accelerations provided in lat/lon frame to roll/pitch angles</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// limit acceleration using maximum lean angles</span></span><br><span class="line">    <span class="keyword">float</span> angle_max = MIN(_attitude_control.get_althold_lean_angle_max(), get_lean_angle_max_cd());</span><br><span class="line">    <span class="keyword">float</span> accel_max = MIN(GRAVITY_MSS * <span class="number">100.0f</span> * tanf(ToRad(angle_max * <span class="number">0.01f</span>)), POSCONTROL_ACCEL_XY_MAX);</span><br><span class="line">    _limit.accel_xy = limit_vector_length(_accel_target.x, _accel_target.y, accel_max);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// update angle targets that will be passed to stabilize controller</span></span><br><span class="line">    accel_to_lean_angles(_accel_target.x, _accel_target.y, _roll_target, _pitch_target);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这段代码中用到了curr_pos.x/y，从导航坐标系下得到的x,y的坐标，具体用的函数是_inav.get_position()：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * get_position - returns the current position relative to the home location in cm.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @return</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">const</span> Vector3f &amp;<span class="title">AP_InertialNav_NavEKF::get_position</span><span class="params">(<span class="keyword">void</span>)</span> <span class="keyword">const</span> </span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> _relpos_cm;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>进一步查看_relpos_cm：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Vector3f _relpos_cm;   <span class="comment">// NEU</span></span><br></pre></td></tr></table></figure><br>可以看出_relpos_cm是北东天坐标系下的位置，目标位置与实际位置做差，所以二者同在北东天坐标系下，所以home是北东天坐标系的原点。</p>
+<h2 id="竖直方向目标位置"><a href="#竖直方向目标位置" class="headerlink" title="竖直方向目标位置"></a>竖直方向目标位置</h2><p>loiter模式油门代表的意义是爬升率，油门杆在中位爬升率为0，中立位以上爬升率为正，中立位以下爬升率为负。竖直方向目标位置在ardupilot代码中用 <strong>_pos_target.z</strong> 来表示。产看一下目标高度的形成：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">AC_PosControl::set_alt_target_from_climb_rate_ff</span><span class="params">(<span class="keyword">float</span> climb_rate_cms, <span class="keyword">float</span> dt, <span class="keyword">bool</span> force_descend)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// calculated increased maximum acceleration if over speed</span></span><br><span class="line">    <span class="keyword">float</span> accel_z_cms = _accel_z_cms;</span><br><span class="line">    <span class="keyword">if</span> (_vel_desired.z &lt; _speed_down_cms &amp;&amp; !is_zero(_speed_down_cms)) &#123;</span><br><span class="line">        accel_z_cms *= POSCONTROL_OVERSPEED_GAIN_Z * _vel_desired.z / _speed_down_cms;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (_vel_desired.z &gt; _speed_up_cms &amp;&amp; !is_zero(_speed_up_cms)) &#123;</span><br><span class="line">        accel_z_cms *= POSCONTROL_OVERSPEED_GAIN_Z * _vel_desired.z / _speed_up_cms;</span><br><span class="line">    &#125;</span><br><span class="line">    accel_z_cms = constrain_float(accel_z_cms, <span class="number">0.0f</span>, <span class="number">750.0f</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// jerk_z is calculated to reach full acceleration in 1000ms.</span></span><br><span class="line">    <span class="keyword">float</span> jerk_z = accel_z_cms * POSCONTROL_JERK_RATIO;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">float</span> accel_z_max = MIN(accel_z_cms, safe_sqrt(<span class="number">2.0f</span> * fabsf(_vel_desired.z - climb_rate_cms) * jerk_z));</span><br><span class="line"></span><br><span class="line">    _accel_last_z_cms += jerk_z * dt;</span><br><span class="line">    _accel_last_z_cms = MIN(accel_z_max, _accel_last_z_cms);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">float</span> vel_change_limit = _accel_last_z_cms * dt;</span><br><span class="line">    _vel_desired.z = constrain_float(climb_rate_cms, _vel_desired.z - vel_change_limit, _vel_desired.z + vel_change_limit);</span><br><span class="line">    _flags.use_desvel_ff_z = <span class="literal">true</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// adjust desired alt if motors have not hit their limits</span></span><br><span class="line">    <span class="comment">// To-Do: add check of _limit.pos_down?</span></span><br><span class="line">    <span class="keyword">if</span> ((_vel_desired.z &lt; <span class="number">0</span> &amp;&amp; (!_motors.limit.throttle_lower || force_descend)) || (_vel_desired.z &gt; <span class="number">0</span> &amp;&amp; !_motors.limit.throttle_upper &amp;&amp; !_limit.pos_up)) &#123;</span><br><span class="line">        _pos_target.z += _vel_desired.z * dt;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>可以看出目标高度是通过目标速度（_vel_desired.z）得来的，即目标高度是根据油门给出的爬升速度得到的，然后进入高度控制器：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">AC_PosControl::run_z_controller</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">//获取导航高度</span></span><br><span class="line">    <span class="keyword">float</span> curr_alt = _inav.get_altitude();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// clear position limit flags</span></span><br><span class="line">    <span class="comment">//清除位置限制标志</span></span><br><span class="line">    _limit.pos_up = <span class="literal">false</span>;</span><br><span class="line">    _limit.pos_down = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// calculate altitude error</span></span><br><span class="line">    _pos_error.z = _pos_target.z - curr_alt;</span><br><span class="line"><span class="string">'''</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>可以看出实际高度也是从导航得到的：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * get_altitude - get latest altitude estimate in cm</span></span><br><span class="line"><span class="comment"> * @return</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">float</span> <span class="title">AP_InertialNav_NavEKF::get_altitude</span><span class="params">()</span> <span class="keyword">const</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> _relpos_cm.z;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>实际高度是北东天坐标系下的z轴坐标。</p>
+
       
 
       
@@ -300,7 +716,7 @@
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">飞行器理论知识</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">APM</a>
         		</li>
       		
 		</ul>
@@ -310,7 +726,7 @@
 
       
         <p class="article-more-link">
-          <a class="article-more-a" href="/2020/04/27/%E7%9B%B4%E5%8D%87%E6%9C%BA%E9%A3%9E%E8%A1%8C%E5%8E%9F%E7%90%86/">展开全文 >></a>
+          <a class="article-more-a" href="/2020/07/22/loiter%E6%A8%A1%E5%BC%8F%E5%AF%BC%E8%88%AA/">展开全文 >></a>
         </p>
       
 
@@ -340,31 +756,101 @@
 
 
   
-    <article id="post-有监督的Hebb学习" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-ardupilot代码添加驱动" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2020/04/21/%E6%9C%89%E7%9B%91%E7%9D%A3%E7%9A%84Hebb%E5%AD%A6%E4%B9%A0/">有监督的Hebb学习</a>
+      <a class="article-title" href="/2020/07/21/ardupilot%E4%BB%A3%E7%A0%81%E6%B7%BB%E5%8A%A0%E9%A9%B1%E5%8A%A8/">ardupilot代码添加驱动</a>
     </h1>
   
 
         
-        <a href="/2020/04/21/%E6%9C%89%E7%9B%91%E7%9D%A3%E7%9A%84Hebb%E5%AD%A6%E4%B9%A0/" class="archive-article-date">
-  	<time datetime="2020-04-21T09:58:17.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-21</time>
+        <a href="/2020/07/21/ardupilot%E4%BB%A3%E7%A0%81%E6%B7%BB%E5%8A%A0%E9%A9%B1%E5%8A%A8/" class="archive-article-date">
+  	<time datetime="2020-07-21T11:06:33.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-07-21</time>
 </a>
         
       </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p><strong>本章介绍Hebb学习的规则，并展示了如何用Hebb规则训练神经网络，解决模式识别问题。</strong></p>
-<p>文章转载于：<a href="https://zhuanlan.zhihu.com/p/67561988" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/67561988</a><br>
-        
-          <a class="article-more-a" href="/2020/04/21/%E6%9C%89%E7%9B%91%E7%9D%A3%E7%9A%84Hebb%E5%AD%A6%E4%B9%A0/#more">more >></a>
-        
+        <p>ardupilot代码在应用层面主要包括两部分，一部分是修改电机（舵机）分配，这个主要是是做新构型飞行器。另一个就是自己写驱动，用于将外部的传感器（GPS,openMv）等接入到飞控当中，这主要是通过串口来实现的，Pixhawk的板子有5个串口，这些串口是同一级别的，都可以接外设。接下来将以OpenMv为例，添加OpenMV的驱动。</p>
+<h2 id="添加AP-OpenMV文件夹"><a href="#添加AP-OpenMV文件夹" class="headerlink" title="添加AP_OpenMV文件夹"></a>添加AP_OpenMV文件夹</h2><p>这个文件夹下主要包括AP_OpenMV.h和AP_OpenMV.cpp两个文件，这就是我们所要添加的驱动文件，这里面提供的就是为上层提供一个借口，为上层提供相应数据，具体数据是从OpenMV中通过解码得来的，每个驱动程序至少宝包括<strong>init</strong>（初始化外设）和update（更新外设）两部分。下面看具体代码：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">pragma</span> once</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;AP_HAL/AP_HAL.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;AP_AHRS/AP_AHRS.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;AP_SerialManager/AP_SerialManager.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AP_OpenMV</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    AP_OpenMV();</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Do not allow copies */</span></span><br><span class="line">    AP_OpenMV(<span class="keyword">const</span> AP_OpenMV &amp;other) = <span class="keyword">delete</span>;</span><br><span class="line">    AP_OpenMV &amp;<span class="keyword">operator</span>=(<span class="keyword">const</span> AP_OpenMV&amp;) = <span class="keyword">delete</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// init - perform required initialisation</span></span><br><span class="line">    <span class="comment">//初始化外设</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">init</span><span class="params">(<span class="keyword">const</span> AP_SerialManager &amp;serial_manager)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//定期更新外设</span></span><br><span class="line">    <span class="function"><span class="keyword">bool</span> <span class="title">update</span><span class="params">(<span class="keyword">void</span>)</span></span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">uint8_t</span> cx;</span><br><span class="line">    <span class="keyword">uint8_t</span> cy;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">uint32_t</span> last_frame_ms;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="comment">//接在飞控哪个串口上</span></span><br><span class="line">    AP_HAL::UARTDriver *_port;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">uint8_t</span> _step;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">uint8_t</span> _cx_temp;</span><br><span class="line">    <span class="keyword">uint8_t</span> _cy_temp;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure><br>接下来仔细分析一下这个文件中相应的函数和变量</p>
+<ul>
+<li><h1 id="include"><a href="#include" class="headerlink" title="include "></a>include <AP_SerialManager/AP_SerialManager.h></h1><p>这是一个十分重要的头文件，凡是通过串口接到飞控上的外设都要用到这个头文件，这个是串口管理器</p>
+</li>
+<li><p>外部接口数据</p>
+<p>cx和cy是向上层传输的数据</p>
+</li>
+<li><p>port</p>
+<p>串口</p>
+</li>
+</ul>
+<p>接下来分析AP_OpenMV.cpp文件：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* </span></span><br><span class="line"><span class="comment">  OpenMV library</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> AP_SERIALMANAGER_OPENMV_BAUD           115200</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> AP_SERIALMANAGER_OPENMV_BUFSIZE_RX     64     <span class="comment">//字节</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> AP_SERIALMANAGER_OPENMV_BUFSIZE_TX     64</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"AP_OpenMV.h"</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">extern</span> <span class="keyword">const</span> AP_HAL::HAL&amp; hal;</span><br><span class="line"></span><br><span class="line"><span class="comment">//constructor</span></span><br><span class="line">AP_OpenMV::AP_OpenMV(<span class="keyword">void</span>)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">//默认对应串口为空</span></span><br><span class="line">    _port = <span class="literal">NULL</span>;</span><br><span class="line">    <span class="comment">//解贞步骤为0</span></span><br><span class="line">    _step = <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * init - perform required initialisation</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">AP_OpenMV::init</span><span class="params">(<span class="keyword">const</span> AP_SerialManager &amp;serial_manager)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">//找到openmv的串口，且不为空</span></span><br><span class="line">    <span class="comment">//SerialProtocol_OPEN_MV串口服务器</span></span><br><span class="line">    <span class="keyword">if</span> ((_port = serial_manager.find_serial(AP_SerialManager::SerialProtocol_OPEN_MV, <span class="number">0</span>)))&#123;</span><br><span class="line">        <span class="comment">//关闭流串口</span></span><br><span class="line">        _port-&gt;set_flow_control(AP_HAL::UARTDriver::FLOW_CONTROL_DISABLE);</span><br><span class="line">        <span class="comment">//初始化uart串口</span></span><br><span class="line">        <span class="comment">//打开串口并开始运行</span></span><br><span class="line">        _port-&gt;<span class="built_in">begin</span>(AP_SERIALMANAGER_OPENMV_BAUD,AP_SERIALMANAGER_OPENMV_BUFSIZE_RX,AP_SERIALMANAGER_OPENMV_BUFSIZE_TX);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//定时调用</span></span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">AP_OpenMV::update</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(_port == <span class="literal">NULL</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="comment">//读取收到字节的数量</span></span><br><span class="line">    <span class="keyword">int16_t</span> numc = _port-&gt;<span class="built_in">available</span>();</span><br><span class="line">    <span class="keyword">uint8_t</span> date;</span><br><span class="line">    <span class="comment">//校验和</span></span><br><span class="line">    <span class="keyword">uint8_t</span> checksum = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//从串口读数据</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int16_t</span> i = <span class="number">0</span>;i&lt;numc;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        date = _port-&gt;<span class="built_in">read</span>();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">switch</span>(_step)&#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">            <span class="keyword">if</span>(date == <span class="number">0xA5</span>)</span><br><span class="line">                _step=<span class="number">1</span>;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">            <span class="keyword">if</span>(date == <span class="number">0xA5</span>)</span><br><span class="line">                _step=<span class="number">1</span>;</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">                _step=<span class="number">0</span>;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">case</span> <span class="number">2</span>:</span><br><span class="line">            _cx_temp = date;</span><br><span class="line">            _step = <span class="number">3</span>;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">case</span> <span class="number">3</span>:</span><br><span class="line">            _cy_temp = date;</span><br><span class="line">            _step = <span class="number">4</span>;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">case</span> <span class="number">4</span>:</span><br><span class="line">            _step = <span class="number">0</span>;</span><br><span class="line">            checksum = _cx_temp + _cy_temp;</span><br><span class="line">            <span class="comment">//解贞成功</span></span><br><span class="line">            <span class="keyword">if</span>(checksum == date)&#123;</span><br><span class="line">                cx = _cx_temp;</span><br><span class="line">                cy = _cy_temp;</span><br><span class="line">                last_frame_ms = AP_HAL::<span class="built_in">millis</span>;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            _step = <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这段代码中主要包括三个函数：</p>
+<h3 id="AP-OpenMV（构造函数）"><a href="#AP-OpenMV（构造函数）" class="headerlink" title="AP_OpenMV（构造函数）"></a>AP_OpenMV（构造函数）</h3><ul>
+<li><p>默认对应串口为空</p>
+</li>
+<li><p>默认解贞步数为0</p>
+</li>
+</ul>
+<h3 id="init-初始化"><a href="#init-初始化" class="headerlink" title="init(初始化)"></a>init(初始化)</h3><p>在初始化时如果设置外设对应的串口返回真，打开串口并开始运行。在这里需要新定义一个枚举类型，在串口管理器中（AP_SerialManager）增加一个OpenMV：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">enum</span> SerialProtocol &#123;</span><br><span class="line">    SerialProtocol_None = <span class="number">-1</span>,</span><br><span class="line">    SerialProtocol_Console = <span class="number">0</span>, <span class="comment">// unused</span></span><br><span class="line">    SerialProtocol_MAVLink = <span class="number">1</span>,</span><br><span class="line">    SerialProtocol_MAVLink2 = <span class="number">2</span>,                 <span class="comment">// do not use - use MAVLink and provide instance of 1</span></span><br><span class="line">    SerialProtocol_FrSky_D = <span class="number">3</span>,                  <span class="comment">// FrSky D protocol (D-receivers)</span></span><br><span class="line">    SerialProtocol_FrSky_SPort = <span class="number">4</span>,              <span class="comment">// FrSky SPort protocol (X-receivers)</span></span><br><span class="line">    SerialProtocol_GPS = <span class="number">5</span>,</span><br><span class="line">    SerialProtocol_GPS2 = <span class="number">6</span>,                     <span class="comment">// do not use - use GPS and provide instance of 1</span></span><br><span class="line">    SerialProtocol_AlexMos = <span class="number">7</span>,</span><br><span class="line">    SerialProtocol_SToRM32 = <span class="number">8</span>,</span><br><span class="line">    SerialProtocol_Rangefinder = <span class="number">9</span>,</span><br><span class="line">    SerialProtocol_FrSky_SPort_Passthrough = <span class="number">10</span>, <span class="comment">// FrSky SPort Passthrough (OpenTX) protocol (X-receivers)</span></span><br><span class="line">    SerialProtocol_Lidar360 = <span class="number">11</span>,                <span class="comment">// Lightware SF40C, TeraRanger Tower or RPLidarA2</span></span><br><span class="line">    SerialProtocol_Aerotenna_uLanding      = <span class="number">12</span>, <span class="comment">// Ulanding support - deprecated, users should use Rangefinder</span></span><br><span class="line">    SerialProtocol_Beacon = <span class="number">13</span>,</span><br><span class="line">    SerialProtocol_Volz = <span class="number">14</span>,                    <span class="comment">// Volz servo protocol</span></span><br><span class="line">    SerialProtocol_Sbus1 = <span class="number">15</span>,</span><br><span class="line">    SerialProtocol_ESCTelemetry = <span class="number">16</span>,</span><br><span class="line">    SerialProtocol_Devo_Telem = <span class="number">17</span>,</span><br><span class="line">    SerialProtocol_OPENMV = <span class="number">18</span>,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<h3 id="update"><a href="#update" class="headerlink" title="update"></a>update</h3><p>在update函数调用的次数是根据主循环或任务列表来定义的，在稍后会做出解释，这个函数的主要目的是定时更新，从串口读取数据，进行解码，最终得到<strong>cx</strong>和<strong>cy</strong>。代码如下：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">AP_OpenMV::update</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(_port == <span class="literal">NULL</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="comment">//读取收到字节的数量</span></span><br><span class="line">    <span class="keyword">int16_t</span> numc = _port-&gt;<span class="built_in">available</span>();</span><br><span class="line">    <span class="keyword">uint8_t</span> date;</span><br><span class="line">    <span class="comment">//校验和</span></span><br><span class="line">    <span class="keyword">uint8_t</span> checksum = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//从串口读数据</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int16_t</span> i = <span class="number">0</span>;i&lt;numc;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        date = _port-&gt;<span class="built_in">read</span>();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">switch</span>(_step)&#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">            <span class="keyword">if</span>(date == <span class="number">0xA5</span>)</span><br><span class="line">                _step=<span class="number">1</span>;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">            <span class="keyword">if</span>(date == <span class="number">0xA5</span>)</span><br><span class="line">                _step=<span class="number">1</span>;</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">                _step=<span class="number">0</span>;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">case</span> <span class="number">2</span>:</span><br><span class="line">            _cx_temp = date;</span><br><span class="line">            _step = <span class="number">3</span>;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">case</span> <span class="number">3</span>:</span><br><span class="line">            _cy_temp = date;</span><br><span class="line">            _step = <span class="number">4</span>;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">case</span> <span class="number">4</span>:</span><br><span class="line">            _step = <span class="number">0</span>;</span><br><span class="line">            checksum = _cx_temp + _cy_temp;</span><br><span class="line">            <span class="comment">//解贞成功</span></span><br><span class="line">            <span class="keyword">if</span>(checksum == date)&#123;</span><br><span class="line">                cx = _cx_temp;</span><br><span class="line">                cy = _cy_temp;</span><br><span class="line">                last_frame_ms = AP_HAL::<span class="built_in">millis</span>;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            _step = <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="在Arducopter-cpp下调用驱动"><a href="#在Arducopter-cpp下调用驱动" class="headerlink" title="在Arducopter.cpp下调用驱动"></a>在Arducopter.cpp下调用驱动</h2><h3 id="在任务列表中调用AP-OpenMV"><a href="#在任务列表中调用AP-OpenMV" class="headerlink" title="在任务列表中调用AP_OpenMV"></a>在任务列表中调用AP_OpenMV</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> AP_Scheduler::<span class="built_in">Task</span> Copter::scheduler_tasks[] = &#123;</span><br><span class="line">    、、、、、、、、</span><br><span class="line"> SCHED_TASK(update_OpenMV,        <span class="number">400</span>,    <span class="number">100</span>),</span><br><span class="line">   、、、、、、、、、</span><br><span class="line">&#125;；</span><br></pre></td></tr></table></figure>
+<h3 id="定义update-OpenMV函数"><a href="#定义update-OpenMV函数" class="headerlink" title="定义update OpenMV函数"></a>定义update OpenMV函数</h3><p>首先在copter.h下声明：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">update_OpenMV</span><span class="params">(<span class="keyword">void</span>)</span></span>;</span><br></pre></td></tr></table></figure><br>然后在Arducopter.cpp下定义这个函数：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">Copter::update_OpenMv</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    openmv.update;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>这里就调用了上面自己写的驱动，目的是得到驱动最终解码得出的数据<strong>cx,cy</strong>。</p>
+<h3 id="在编译脚本中添加驱动"><a href="#在编译脚本中添加驱动" class="headerlink" title="在编译脚本中添加驱动"></a>在编译脚本中添加驱动</h3><p>在ArduCopter下的wscript编译脚本中最后增加AP_OpenMV库：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">def <span class="title">build</span><span class="params">(bld)</span>:</span></span><br><span class="line"><span class="function">    vehicle </span>= bld.path.name</span><br><span class="line">    bld.ap_stlib(</span><br><span class="line">        name=vehicle + '_libs',</span><br><span class="line">        ap_vehicle=vehicle,</span><br><span class="line">        ap_libraries=bld.ap_common_vehicle_libraries() + [</span><br><span class="line">            'AP_ADSB',</span><br><span class="line">            'AC_AttitudeControl',</span><br><span class="line">            'AC_InputManager',</span><br><span class="line">            'AC_Fence',</span><br><span class="line">            'AC_Avoidance',</span><br><span class="line">            'AC_PID',</span><br><span class="line">            'AC_PrecLand',</span><br><span class="line">            'AC_Sprayer',</span><br><span class="line">            'AC_WPNav',</span><br><span class="line">            'AP_Camera',</span><br><span class="line">            'AP_IRLock',</span><br><span class="line">            'AP_InertialNav',</span><br><span class="line">            'AP_LandingGear',</span><br><span class="line">            'AP_Menu',</span><br><span class="line">            'AP_Motors',</span><br><span class="line">            'AP_Parachute',</span><br><span class="line">            'AP_RCMapper',</span><br><span class="line">            'AP_Avoidance',</span><br><span class="line">            'AP_AdvancedFailsafe',</span><br><span class="line">            'AP_SmartRTL',</span><br><span class="line">            'AP_Stats',</span><br><span class="line">            'AP_Beacon',</span><br><span class="line">            'AP_Arming',</span><br><span class="line">            'AP_WheelEncoder',</span><br><span class="line">            'AP_Winch',</span><br><span class="line">            'AP_Follow',</span><br><span class="line">            'AP_Devo_Telem',</span><br><span class="line">            'AP_OSD',</span><br><span class="line">            'AP_OpenMV',</span><br><span class="line">        ],</span><br><span class="line">    )</span><br></pre></td></tr></table></figure></p>
+<p>这样添加驱动就已经完成了。</p>
+<h2 id="添加自定义log日志"><a href="#添加自定义log日志" class="headerlink" title="添加自定义log日志"></a>添加自定义log日志</h2><p>前面已经添加了OpenMV驱动，接下来将为驱动添加日志：</p>
+<h3 id="在log-cpp下定义OpenMV日志"><a href="#在log-cpp下定义OpenMV日志" class="headerlink" title="在log.cpp下定义OpenMV日志"></a>在log.cpp下定义OpenMV日志</h3><ul>
+<li><p>定义OpenMV日志结构体</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"> <span class="class"><span class="keyword">struct</span> <span class="title">PACKED</span> <span class="title">log_OpenMV</span>&#123;</span></span><br><span class="line">    Log_PACKET_HEADER;</span><br><span class="line">    <span class="keyword">uint64_t</span> time_us;</span><br><span class="line">    <span class="keyword">uint8_t</span> cx;</span><br><span class="line">    <span class="keyword">uint8_t</span> cy;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>这个结构体中主要包含一下几个部分：</p>
+<ol>
+<li>帧头：Log_PACKET_HEADER</li>
+<li>时间：time_us</li>
+<li>坐标cx/cy</li>
+</ol>
+</li>
+</ul>
+<p>这个结构体包含的固定部分是帧头和时间（Log_PACKET_HEADER和time_us），每个日志的结构体都包括这两部分。</p>
+<ul>
+<li>定义OpenMV日志函数<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//write an OpenMV packet</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">Copter::Log_Write_OpenMV</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">log_OpenMV</span> <span class="title">pkt</span> = &#123;</span></span><br><span class="line">            LOG_PACKET_HEADER_INIT(LOG_OPENMV_MSG),</span><br><span class="line">            time_us         : AP_HAL::micros64,</span><br><span class="line">            cx              : openmv.cx,</span><br><span class="line">            cy              : openmv.cy</span><br><span class="line">    &#125;;</span><br><span class="line">    DateFlash.WriteBlock(&amp;pkt,<span class="keyword">sizeof</span>(pkt));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+这里提到了一个枚举类型LoggingParameters（日志参数），需要将OpenMV日至参数添加到这个枚举类型中来。<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//  Logging parameters</span></span><br><span class="line"><span class="keyword">enum</span> LoggingParameters &#123;</span><br><span class="line">     TYPE_AIRSTART_MSG,</span><br><span class="line">     TYPE_GROUNDSTART_MSG,</span><br><span class="line">     LOG_CONTROL_TUNING_MSG,</span><br><span class="line">     LOG_OPTFLOW_MSG,</span><br><span class="line">     LOG_EVENT_MSG,</span><br><span class="line">     LOG_ERROR_MSG,</span><br><span class="line">     LOG_DATA_INT16_MSG,</span><br><span class="line">     LOG_DATA_UINT16_MSG,</span><br><span class="line">     LOG_DATA_INT32_MSG,</span><br><span class="line">     LOG_DATA_UINT32_MSG,</span><br><span class="line">     LOG_DATA_FLOAT_MSG,</span><br><span class="line">     LOG_AUTOTUNE_MSG,</span><br><span class="line">     LOG_AUTOTUNEDETAILS_MSG,</span><br><span class="line">     LOG_MOTBATT_MSG,</span><br><span class="line">     LOG_PARAMTUNE_MSG,</span><br><span class="line">     LOG_HELI_MSG,</span><br><span class="line">     LOG_PRECLAND_MSG,</span><br><span class="line">     LOG_GUIDEDTARGET_MSG,</span><br><span class="line">     LOG_OPENMV_MSG,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="在ArduCopter-cpp下的update函数中添加日志函数"><a href="#在ArduCopter-cpp下的update函数中添加日志函数" class="headerlink" title="在ArduCopter.cpp下的update函数中添加日志函数"></a>在ArduCopter.cpp下的update函数中添加日志函数</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">Copter::update_OpenMv</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">   <span class="keyword">if</span>(openmv.update())</span><br><span class="line">        Log_Write_OpenMV();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="OpenMV引导飞行"><a href="#OpenMV引导飞行" class="headerlink" title="OpenMV引导飞行"></a>OpenMV引导飞行</h2>在前面已经实现了从AP_OpenMV库中获取数据，并且将数据传到了ArduCopter.cpp下的update_OpenMV函数中,接下来将利用OpenMV的数据引导飞行：<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">Copter::update_OpenMv</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">uint32_t</span> last_set_pos_target_time_ms = <span class="number">0</span>;</span><br><span class="line">    Vector3f target = Vector3f(<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>);</span><br><span class="line">    <span class="keyword">if</span>(openmv.update() || sim_openmv_new_date)&#123;</span><br><span class="line">        Log_Write_OpenMV();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span>(control_mode != GUIDED)</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int16_t</span> target_body_frame_y = (<span class="keyword">int16_t</span>)openmv.cx - <span class="number">80</span>;</span><br><span class="line">        <span class="keyword">int16_t</span> target_body_frame_z = (<span class="keyword">int16_t</span>)openmv.cy - <span class="number">60</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">float</span> angle_y_deg = target_body_frame_y * <span class="number">60.0f</span>/<span class="number">160.0f</span>;</span><br><span class="line">        <span class="keyword">float</span> angle_z_deg = target_body_frame_z * <span class="number">60.0f</span>/<span class="number">120.0f</span>;</span><br><span class="line"></span><br><span class="line">        Vector3f v = Vector3f(<span class="number">1.0f</span>,tanf(radians(angle_y_deg)),tanf(radians(angle_z_deg)));</span><br><span class="line">        v=v/v.length();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">const</span> Matrix3f &amp;rotMat = copter.ahrs.get_rotation_body_to_ned();</span><br><span class="line">        v=rotMat * v;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//虚拟目标位置</span></span><br><span class="line">        target = v * <span class="number">10000.0f</span>;</span><br><span class="line">        target.z = -target.z; <span class="comment">//ned to neu(北东高)</span></span><br><span class="line"></span><br><span class="line">        Vector3f current_pos = inertial_nav.get_position();</span><br><span class="line">        target = target + current_pos;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span>(<span class="built_in">millis</span>() - last_set_pos_target_time_ms &gt; <span class="number">500</span>)&#123; <span class="comment">//call in 2Hz</span></span><br><span class="line">            <span class="comment">//wp_nav-&gt;set_wp_destination(target,false);</span></span><br><span class="line">            mode_guided.set_destination(target,<span class="literal">false</span>,<span class="number">0</span>,<span class="literal">true</span>,<span class="number">0</span>,<span class="literal">false</span>);</span><br><span class="line">            last_set_pos_target_time_ms = <span class="built_in">millis</span>();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="GPS库（驱动）"><a href="#GPS库（驱动）" class="headerlink" title="GPS库（驱动）"></a>GPS库（驱动）</h2>AP_GPS文件夹中支持的外设如下：</li>
+<li>AP_GPS_ERB：基于ERB协议的GNSS设备；</li>
+<li>AP_GPS_GSOF：Trimble（天宝）公司的GNSS设备；</li>
+<li>AP_MAV：基于Mavlink通信协议的GNSS设备；</li>
+<li>AP_MTK：联发科GNSS设备；</li>
+<li>AP_MTK19：联发科基于其V1.6~V1.9版本通信协议的GNSS设备；</li>
+<li>AP_NMEA：基于NMEA协议的GNSS设备；</li>
+<li>AP_NOVA：基于诺瓦泰协议的GNSS设备，注意，常用的多个品牌的RTK设备（诺瓦泰、司南导航、和芯星通等等）均采用这个协议；</li>
+<li>AP_SBF： Septentrio 品牌的GNSS设备；</li>
+<li>AP_SBP： Swift Navigation 品牌的GNSS设备；</li>
+<li>AP_SBP2： Swift Navigation 品牌的GNSS设备（估计是升级版本的协议）；</li>
+<li>AP_SIRF：SIRF公司的GNSS设备；</li>
+<li>AP_GPS_UAVCAN：基于UAVCAN协议的GNSS协议，数据走的不是串口，而是CAN总线；</li>
+<li>AP_GPS_UBLOX：ublox公司的GNSS通信协议，我们常用的ublox-M8N就是用的这个协议，这个协议在ublox官方文档中被命名为“UBX”协议。</li>
+</ul>
+<p><img src="https://i.loli.net/2020/07/22/RqM91kmbVzOHQJZ.png" alt="AP_GPS驱动.png"><br>GPS驱动在初始化的时候，会根据飞控参数设置，动态地添加不同类型的GPS驱动，生成一个个的实例（instance），组成一个实例数组，然后会定时依次调用各个实例下的解析处理函数，实现多个不同类型的GPS的同时工作（也可以是多个相同类型的GPS同时工作），其结构图如下：<br><img src="https://i.loli.net/2020/07/22/HB9nSZUKw6RD4od.jpg" alt="GPS代码结构-1536x1107.jpg"></p>
+<p>所以我们在平时开发是要写的是内部驱动，GPS_Backend.h/cpp中都是虚函数，具体由各个实际的驱动重载，然后提供位置和速度信息给AP_GPS.cpp,顶层以50Hz调用AP_GPS。</p>
+<p>下面分析一下AP_GPS.h中的GPS驱动对上层的接口：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">GPS_State</span> &#123;</span></span><br><span class="line">    <span class="keyword">uint8_t</span> instance; <span class="comment">// the instance number of this GPS</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// all the following fields must all be filled by the backend driver</span></span><br><span class="line">    GPS_Status status;                  <span class="comment">///&lt; driver fix status</span></span><br><span class="line">    <span class="keyword">uint32_t</span> time_week_ms;              <span class="comment">///&lt; GPS time (milliseconds from start of GPS week)</span></span><br><span class="line">    <span class="keyword">uint16_t</span> time_week;                 <span class="comment">///&lt; GPS week number</span></span><br><span class="line">    Location location;                  <span class="comment">///&lt; last fix location                          经纬高位置</span></span><br><span class="line">    <span class="keyword">float</span> ground_speed;                 <span class="comment">///&lt; ground speed in m/sec                      gps只测地速</span></span><br><span class="line">    <span class="keyword">float</span> ground_course;                <span class="comment">///&lt; ground course in degrees                   地速的航向</span></span><br><span class="line">    <span class="keyword">uint16_t</span> hdop;                      <span class="comment">///&lt; horizontal dilution of precision in cm     水平精度因子，GPS自己估算出来的</span></span><br><span class="line">    <span class="keyword">uint16_t</span> vdop;                      <span class="comment">///&lt; vertical dilution of precision in cm       垂直精度因子</span></span><br><span class="line">    <span class="keyword">uint8_t</span> num_sats;                   <span class="comment">///&lt; Number of visible satellites               卫星数</span></span><br><span class="line">    Vector3f velocity;                  <span class="comment">///&lt; 3D velocity in m/s, in NED format          三维速度</span></span><br><span class="line">    <span class="keyword">float</span> speed_accuracy;               <span class="comment">///&lt; 3D velocity RMS accuracy estimate in m/s</span></span><br><span class="line">    <span class="keyword">float</span> horizontal_accuracy;          <span class="comment">///&lt; horizontal RMS accuracy estimate in m</span></span><br><span class="line">    <span class="keyword">float</span> vertical_accuracy;            <span class="comment">///&lt; vertical RMS accuracy estimate in m</span></span><br><span class="line">    <span class="keyword">bool</span> have_vertical_velocity:<span class="number">1</span>;      <span class="comment">///&lt; does GPS give vertical velocity? Set to true only once available.</span></span><br><span class="line">    <span class="keyword">bool</span> have_speed_accuracy:<span class="number">1</span>;         <span class="comment">///&lt; does GPS give speed accuracy? Set to true only once available.</span></span><br><span class="line">    <span class="keyword">bool</span> have_horizontal_accuracy:<span class="number">1</span>;    <span class="comment">///&lt; does GPS give horizontal position accuracy? Set to true only once available.</span></span><br><span class="line">    <span class="keyword">bool</span> have_vertical_accuracy:<span class="number">1</span>;      <span class="comment">///&lt; does GPS give vertical position accuracy? Set to true only once available.</span></span><br><span class="line">    <span class="keyword">uint32_t</span> last_gps_time_ms;          <span class="comment">///&lt; the system time we got the last GPS timestamp, milliseconds</span></span><br></pre></td></tr></table></figure><br>具体单独要到结构体中的哪个数据需要用到AP_GPS.h中下面的函数，例如：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ground speed in m/s</span></span><br><span class="line"><span class="function"><span class="keyword">float</span> <span class="title">ground_speed</span><span class="params">(<span class="keyword">uint8_t</span> instance)</span> <span class="keyword">const</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> state[instance].ground_speed;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>就是单独提供地速的接口给上层。</p>
+<p>下面看一下GPS状态：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// GPS status codes</span></span><br><span class="line"><span class="keyword">enum</span> GPS_Status &#123;</span><br><span class="line">    NO_GPS = GPS_FIX_TYPE_NO_GPS,                     <span class="comment">///&lt; No GPS connected/detected</span></span><br><span class="line">    NO_FIX = GPS_FIX_TYPE_NO_FIX,                     <span class="comment">///&lt; Receiving valid GPS messages but no lock</span></span><br><span class="line">    GPS_OK_FIX_2D = GPS_FIX_TYPE_2D_FIX,              <span class="comment">///&lt; Receiving valid messages and 2D lock</span></span><br><span class="line">    GPS_OK_FIX_3D = GPS_FIX_TYPE_3D_FIX,              <span class="comment">///&lt; Receiving valid messages and 3D lock</span></span><br><span class="line">    GPS_OK_FIX_3D_DGPS = GPS_FIX_TYPE_DGPS,           <span class="comment">///&lt; Receiving valid messages and 3D lock with differential improvements 差分</span></span><br><span class="line">    GPS_OK_FIX_3D_RTK_FLOAT = GPS_FIX_TYPE_RTK_FLOAT, <span class="comment">///&lt; Receiving valid messages and 3D RTK Float</span></span><br><span class="line">    GPS_OK_FIX_3D_RTK_FIXED = GPS_FIX_TYPE_RTK_FIXED, <span class="comment">///&lt; Receiving valid messages and 3D RTK Fixed 真正的RTK状态</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>这些状态在地面站GPS检测时会时时打印在地面站上</p>
+<ul>
+<li>NO_GPS:代表没有搜索到GPS</li>
+<li>NO_FIX:代表已将开始检测到了GPS</li>
+<li>GPS_OK_FIX_2D：只能进行水平定位</li>
+<li>GPS_OK_FIX_3D：能做到三维定位</li>
+</ul>
+<p>GPS驱动类型：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// GPS driver types</span></span><br><span class="line"><span class="keyword">enum</span> GPS_Type &#123;</span><br><span class="line">    GPS_TYPE_NONE  = <span class="number">0</span>,</span><br><span class="line">    GPS_TYPE_AUTO  = <span class="number">1</span>,</span><br><span class="line">    GPS_TYPE_UBLOX = <span class="number">2</span>,</span><br><span class="line">    GPS_TYPE_MTK   = <span class="number">3</span>,</span><br><span class="line">    GPS_TYPE_MTK19 = <span class="number">4</span>,</span><br><span class="line">    GPS_TYPE_NMEA  = <span class="number">5</span>,</span><br><span class="line">    GPS_TYPE_SIRF  = <span class="number">6</span>,</span><br><span class="line">    GPS_TYPE_HIL   = <span class="number">7</span>,</span><br><span class="line">    GPS_TYPE_SBP   = <span class="number">8</span>,</span><br><span class="line">    GPS_TYPE_UAVCAN = <span class="number">9</span>,</span><br><span class="line">    GPS_TYPE_SBF   = <span class="number">10</span>,</span><br><span class="line">    GPS_TYPE_GSOF  = <span class="number">11</span>,</span><br><span class="line">    GPS_TYPE_ERB = <span class="number">13</span>,</span><br><span class="line">    GPS_TYPE_MAV = <span class="number">14</span>,</span><br><span class="line">    GPS_TYPE_NOVA = <span class="number">15</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>如果我们想添加新的驱动，则需要在这里添加。</p>
+
       
 
       
@@ -377,7 +863,7 @@
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">神经网络</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">APM</a>
         		</li>
       		
 		</ul>
@@ -387,7 +873,7 @@
 
       
         <p class="article-more-link">
-          <a class="article-more-a" href="/2020/04/21/%E6%9C%89%E7%9B%91%E7%9D%A3%E7%9A%84Hebb%E5%AD%A6%E4%B9%A0/">展开全文 >></a>
+          <a class="article-more-a" href="/2020/07/21/ardupilot%E4%BB%A3%E7%A0%81%E6%B7%BB%E5%8A%A0%E9%A9%B1%E5%8A%A8/">展开全文 >></a>
         </p>
       
 
@@ -417,29 +903,29 @@
 
 
   
-    <article id="post-asbQuadcopter状态估计器" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-TECS指南" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2020/04/20/asbQuadcopter%E7%8A%B6%E6%80%81%E4%BC%B0%E8%AE%A1%E5%99%A8/">asbQuadcopter状态估计器</a>
+      <a class="article-title" href="/2020/07/09/TECS%E6%8C%87%E5%8D%97/">TECS指南</a>
     </h1>
   
 
         
-        <a href="/2020/04/20/asbQuadcopter%E7%8A%B6%E6%80%81%E4%BC%B0%E8%AE%A1%E5%99%A8/" class="archive-article-date">
-  	<time datetime="2020-04-20T02:23:58.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-20</time>
+        <a href="/2020/07/09/TECS%E6%8C%87%E5%8D%97/" class="archive-article-date">
+  	<time datetime="2020-07-09T07:24:43.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-07-09</time>
 </a>
         
       </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>以asbQuadcopter为基础，研究其状态估计部分。首先看一下其simulink模型。<br>
+        <h1 id="TECS-Total-Energy-Control-System-for-Speed-and-Height-Tuning"><a href="#TECS-Total-Energy-Control-System-for-Speed-and-Height-Tuning" class="headerlink" title="TECS (Total Energy Control System) for Speed and Height Tuning "></a>TECS (Total Energy Control System) for Speed and Height Tuning </h1><p>This article explains how to tune the TECs system for speed and height control.<br>
         
-          <a class="article-more-a" href="/2020/04/20/asbQuadcopter%E7%8A%B6%E6%80%81%E4%BC%B0%E8%AE%A1%E5%99%A8/#more">more >></a>
+          <a class="article-more-a" href="/2020/07/09/TECS%E6%8C%87%E5%8D%97/#more">more >></a>
         
       
 
@@ -463,7 +949,7 @@
 
       
         <p class="article-more-link">
-          <a class="article-more-a" href="/2020/04/20/asbQuadcopter%E7%8A%B6%E6%80%81%E4%BC%B0%E8%AE%A1%E5%99%A8/">展开全文 >></a>
+          <a class="article-more-a" href="/2020/07/09/TECS%E6%8C%87%E5%8D%97/">展开全文 >></a>
         </p>
       
 
@@ -493,29 +979,193 @@
 
 
   
-    <article id="post-传感器" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-Roll, Pitch and Yaw Controller Tuning" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2020/04/20/%E4%BC%A0%E6%84%9F%E5%99%A8/">传感器</a>
+      <a class="article-title" href="/2020/07/09/Roll,%20Pitch%20and%20Yaw%20Controller%20Tuning/">Roll, Pitch and Yaw Controller Tuning</a>
     </h1>
   
 
         
-        <a href="/2020/04/20/%E4%BC%A0%E6%84%9F%E5%99%A8/" class="archive-article-date">
-  	<time datetime="2020-04-20T02:23:58.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-20</time>
+        <a href="/2020/07/09/Roll,%20Pitch%20and%20Yaw%20Controller%20Tuning/" class="archive-article-date">
+  	<time datetime="2020-07-09T01:24:41.993Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-07-09</time>
 </a>
         
       </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h2 id="陀螺仪"><a href="#陀螺仪" class="headerlink" title="陀螺仪"></a>陀螺仪</h2><p>通过陀螺仪测出的没有欧拉角，只有角速度，那么如何将角速度和欧拉角联系在一起呢？<br>这实际上就是一个积分与微分的关系。目前共有以下几种方法：<br>
+        <h1 id="Roll-Pitch-and-Yaw-Controller-Tuning"><a href="#Roll-Pitch-and-Yaw-Controller-Tuning" class="headerlink" title="Roll, Pitch and Yaw Controller Tuning"></a>Roll, Pitch and Yaw Controller Tuning</h1><p>These instructions will teach you how to tune the roll, pitch and yaw response of your aircraft. This is the first tuning you should do with a new aircraft, as everything else relies on getting this right.</p>
+<p>Tip</p>
+<p>We <strong>strongly</strong> recommend that <a href="automatic-tuning-with-autotune.html#automatic-tuning-with-autotune">you use AUTOTUNE to perform roll/pitch/yaw tuning</a>. The instructions in this article should be used if you are unable to fly.</p>
+<p>Note</p>
+<p>The default values for the roll and pitch controllers in Plane are quite deliberately too small for most aircraft. This is because small values will cause APM to not navigate well and be sluggish, but are less likely to cause the aircraft to crash. The defaults also have a zero ‘I’ gain, as you should not introduce any ‘I’ (integrator) until you have correctly tuned the ‘P’ gain.</p>
+<h2 id="Preconditions"><a href="#Preconditions" class="headerlink" title="Preconditions"></a>Preconditions</h2><p>The following instruction assume that:</p>
+<ul>
+<li>Your model is trimmed</li>
+<li>You have done your radio calibration</li>
+<li>You have calibrated your airspeed sensor</li>
+<li>You have leveled the autopilot</li>
+<li>You have set your APM and transmitter to be able to select <a href="fbwa-mode.html#fbwa-mode">FBW-A mode</a></li>
+<li>You have checked your pitch roll and yaw angle on the HUD and verified that they match the rotation of the model</li>
+</ul>
+<h2 id="Ground-Checks"><a href="#Ground-Checks" class="headerlink" title="Ground Checks"></a>Ground Checks</h2><ol>
+<li>On the ground select FBW-A mode</li>
+<li>Rotate your model nose up - you should see the elevators/elevons deflect down</li>
+<li>Rotate your model nose down - you should see the elevators/elevons deflect up</li>
+<li>Roll the model to the right - you should see the LH aileron/elevon go up and the RH aileron/elevon go down.</li>
+<li>Roll the model to the left - you should see the LH aileron/elevon go down and the RH aileron/elevon go up.</li>
+<li>Level the model - the control surfaces should be close to neutral. There will be a little bit of offset, but any more than 10% of your maximum throw indicates that the APM has not been leveled or the radio calibration needs to be repeated.</li>
+<li>With the model level apply LH and RH roll stick inputs on your transmitter - the controls should deflect in the same direction that they would in manual mode.</li>
+<li>With the model level apply up and down pitch stick inputs on your transmitter the controls should deflect in the same direction that they would in manual mode.</li>
+<li>If you have an airspeed sensor enabled then blow air towards the front of the pitot tube and watch the HUD. You should see the airspeed reading increase</li>
+</ol>
+<h2 id="Flight-testing"><a href="#Flight-testing" class="headerlink" title="Flight testing"></a>Flight testing</h2><p>Ideally you will need a second person to do this - one person to fly the plane and one person to adjust the parameters. To follow the manual parts of this procedure you need to be a proficient RC pilot or have someone who is available to help you. Otherwise you will need to start at step 2 on the Initial Assessment and be more cautious with control gain adjustment, increasing them in small steps.</p>
+<h2 id="Initial-Assessment"><a href="#Initial-Assessment" class="headerlink" title="Initial Assessment"></a>Initial Assessment</h2><ol>
+<li>Take-off in manual and adjust the trims and throttle to a cruise position so that the plane flies straight and level at a speed that you are comfortable with. This will normally be somewhere between 30 and 60% throttle depending on how overpowered your model is.</li>
+<li>With the plane flying away from you switch to FBW-A. It should continue to fly wings level and at a fairly constant height (it may climb or descend slowly). If it wants to roll or pitch more than a small amount then there is a problem with the model’s trim, autopilot level or radio calibration and you need to solve that first before proceeding further.</li>
+<li>If the model starts to wag its wings, then the default <code>RLL2SRV_P</code> value is too high for your model (this is unlikely but could happen) and you need to switch back to manual immediately and ask your assistant to halve the <code>RLL2SRV_P</code> parameter before switching back into FBW-A</li>
+<li>If the model starts to porpoise, the default <code>PTCH2SRV_P</code> value is too high (this is unlikely but could happen) and you need to switch back to manual immediately and ask your assistant to halve the <code>PTCH2SRV_P</code> parameter before switching back into FBW-A</li>
+</ol>
+<h2 id="Roll-Control-Tuning"><a href="#Roll-Control-Tuning" class="headerlink" title="Roll Control Tuning"></a>Roll Control Tuning</h2><h3 id="Method-1"><a href="#Method-1" class="headerlink" title="Method 1)"></a>Method 1)</h3><p>This method is the simplest, but won’t give the best result. For those users familiar with tuning the old PID controllers, the <code>RLL2SRV_P</code>, <code>RLL2SRV_I</code> and <code>RLL2SRV_D</code> gains have the same effect, but there are some additional values that can be set by more advanced users.</p>
+<ol>
+<li>With the model in FBW-A mode, put in a rapid bank angle demand by pushing the aileron stick all the way over, hold it for a couple of seconds and then release. Do the same in the other direction. You want the model to roll quickly and smoothly to the new bank angle and back again without overshoot or any wing ‘rocking’. If the roll response is too slow, then progressively increase <a href="parameters.html#rll2srv-p">RLL2SRV_P</a> in increments of 0.1 until you are happy with the response.</li>
+<li>If you get bank angle oscillation or overshoot, then you need to reduce <a href="parameters.html#rll2srv-p">RLL2SRV_P</a>. If at this point you still don’t have sufficient response then you need to follow Method 2.</li>
+<li>Once you are happy with the roll response you should now slowly increase the <a href="parameters.html#rll2srv-i">RLL2SRV_I</a> to give the controller some “I gain” to allow it to cope better with wind. A value of 0.05 will work for most models. If you see overshoot or oscillation when raising the I value then halve it.</li>
+</ol>
+<h3 id="Method-2"><a href="#Method-2" class="headerlink" title="Method 2"></a>Method 2</h3><p>This method will give a better result, but requires more caution because step 2 can produce a high frequency instability that can overheat the aileron servo(s) if allowed to continue.</p>
+<ol>
+<li>With the model in FBW-A mode, put in a rapid bank angle demand, hold it and release. Do the same in the other direction. You want the model to roll quickly and smoothly to the new bank angle and back again without overshoot or any wing ‘waggle’. If the roll response is too slow, then progressively increase the <a href="parameters.html#rll2srv-p">RLL2SRV_P</a> gain in increments of 0.1 until you are happy with the response or you start to get oscillation in bank angle or overshoot</li>
+<li>Increase <a href="parameters.html#rll2srv-d">RLL2SRV_D</a> in increments of 0.01 until it it starts to oscillate, then halve it. Do not go above 0.1 for <a href="parameters.html#rll2srv-d">RLL2SRV_D</a> without checking the temperature of your servos when you land as in extreme cases turning up this gain can cause rapid servo movement and overheat the servos leading to premature failure.</li>
+<li>Now start to increase the integrator gain <a href="parameters.html#rll2srv-i">RLL2SRV_I</a> in steps of 0.05 from its default value of zero until the bank angle starts to overshoot or oscillate, then halve it.</li>
+</ol>
+<h3 id="Tuning-tips"><a href="#Tuning-tips" class="headerlink" title="Tuning tips"></a>Tuning tips</h3><ul>
+<li>Select the tuning box on the bottom of the Mission Planners Flight Data page. You should get a scrolling black window above the map. Double click in the black window and you should get a list of parameters to plot. Change the selection until you have the roll and nav_roll plotted. Nav_roll is the demand and roll is the response. You can use this to look for overshoot and other behaviour that isn’t so obvious from the ground looking at the model.</li>
+<li>Check for any steady offset between nav_roll and roll. If you have followed the basic method you may see an offset which can be removed by setting <code>RLL2SRV_I</code> to a small value (say 0.01) which will allow the control loop to slowly trim the aileron demand to remove the steady error.</li>
+<li>Although the autopilot will prevent the integrator from increasing if the maximum aileron is exceeded, there is additional protection provided by the <code>RLL2SRV_IMAX</code> parameter. This parameter sets the maximum amount of aileron (in centi-degrees) that the integrator can control. The default value of 1500 allows the integrator to trim up to 1/3 of the total aileron travel. This parameter should not need to be changed unless you are trying to tune the controller to be able to compensate for large roll offsets due to system failures.</li>
+<li>The maximum roll rate can be constrained to make the model bank more smoothly by setting the roll rate limit <a href="parameters.html#rll2srv-rmax">RLL2SRV_RMAX</a> parameter to a non-zero value. The default value of 60 deg/sec works well for most models. Setting this parameter to 0 turns the rate limiter off and can make the effect of tuning changes easier to see. If this value is reduced too far, then the roll controller is unable to keep up with demands from the navigation controller which leads to overshoot and weaving in the aircraft’s trajectory.</li>
+<li>The time constant parameter <code>RLL2SRV_TCONST</code> can also be used to adjust how rapidly the bank angle reaches the demanded value. The effect of this parameter will be seen mostly in the response to small step changes in demanded roll. For larger roll demands, the roll rate limit <code>RLL2SRV_I</code> tends to mask its effect. Making this parameter smaller will cause the aircraft to reach its demanded roll angle in less time, but only if the aircraft is capable. A very slow responding airframe may require a slightly larger setting for this parameter.</li>
+<li>Plot the roll_speed in the tuning window. This shows the rate of roll in radians/second. A value of 1 radian/second is approximately equal to 60 degrees/second (57 to be more precise), so if you have <a href="parameters.html#rll2srv-rmax">RLL2SRV_RMAX</a> set to 60, the maximum roll_speed when responding to a large bank angle demand (eg full bank one way to full bank the other) should be just above 1.0. A value of greater than 1.1 indicates that <code>RLL2SRV_P</code> is too high and should be reduced, whereas a value of less than 1 indicates that <code>RLL2SRV_P</code> should be increased.</li>
+</ul>
+<h2 id="Pitch-Control-Tuning"><a href="#Pitch-Control-Tuning" class="headerlink" title="Pitch Control Tuning"></a>Pitch Control Tuning</h2><h3 id="Method-1-1"><a href="#Method-1-1" class="headerlink" title="Method 1"></a>Method 1</h3><p>This method is the simplest and but won’t give the best result. For those users familiar with tuning the old PID controller gains, the K_P, K_I and K_D gains in this controller have the same effect, but there are some additional values that can be set by more advanced users.</p>
+<ol>
+<li>With the model in FBW-A mode, put in a rapid pitch angle demand, hold it and release. Do the same in the other direction. You want the model to pitch quickly and smoothly to the new pitch angle and back again without overshoot or any porpoising. If the pitch response is too slow, then progressively increase <a href="parameters.html#ptch2srv-p">PTCH2SRV_P</a> in increments of 0.1 until you are happy with the response.</li>
+<li>If you get pitch angle oscillation or overshoot, then you need to reduce <a href="parameters.html#ptch2srv-p">PTCH2SRV_P</a>. If at this point you still don’t have sufficient response then you need to check your radio calibration, the minimum and maximum pitch angles and potentially follow Method 2.</li>
+<li>Now roll the model to maximum bank in each direction. The nose should stay fairly level during the turns without significant gain or loss of altitude. Some loss of altitude during sustained turns at constant throttle is expected, because the extra drag of turning slows the model down which will cause a mild descent. If the model gains height during the turns then you need to reduce the <a href="parameters.html#ptch2srv-rll">PTCH2SRV_RLL</a> by small increments of 0.05 from the default value of 1.0. If the model descends immediately when the model banks (a mild descent later in the turn when the model slows down is normal as explained earlier) then increase the <a href="parameters.html#ptch2srv-rll">PTCH2SRV_RLL</a> by small increments of 0.01 from the default value of 1.0. If you need to change the <a href="parameters.html#ptch2srv-rll">PTCH2SRV_RLL</a> parameter outside the range from 0.7 to 1.4 then something is likely wrong with either the earlier tuning of your pitch loop, your airspeed calibration or you APM’s bank angle estimate.</li>
+</ol>
+<h3 id="Method-2-1"><a href="#Method-2-1" class="headerlink" title="Method 2"></a>Method 2</h3><p>This method can give a better result, but requires more caution because step 2) can produce a high frequency instability that unless reversion back to manual is done quickly, could overstress the plane.</p>
+<ol>
+<li>Perform the tuning steps from Method 1</li>
+<li>Increase <a href="parameters.html#ptch2srv-d">PTCH2SRV_D</a> in increments of 0.01 until it it starts to oscillate, then halve it. Do not go above 0.1 for <a href="parameters.html#ptch2srv-d">PTCH2SRV_D</a> without checking the temperature of your servos when you land as in extreme cases turning up this gain can cause rapid servo movement and overheat the servos leading to premature failure.</li>
+<li>Now start to increase the integrator gain <a href="parameters.html#ptch2srv-i">PTCH2SRV_I</a> in steps of 0.05 from its default value of zero until the pitch angle starts to overshoot or oscillate, then halve it.</li>
+</ol>
+<h3 id="Tuning-tips-1"><a href="#Tuning-tips-1" class="headerlink" title="Tuning tips"></a>Tuning tips</h3><ul>
+<li>Select the tuning box on the bottom of the Mission Planners Flight Data page. You should get a scrolling black window above the map. Double click in the black window and you should get a list of parameters to plot. Change the selection until you have the pitch and nav_pitch plotted. Nav_pitch is the demand and pitch is the response. You can use this to look for overshoot and other behaviour that isn’t so obvious from the ground looking at the model.</li>
+<li>Check for any steady offset between nav_pitch-roll and pitch. If you have followed the basic method you may see an offset which can be removed by setting <code>PTCH2SRV_I</code> to a small value (say 0.05) which will allow the control loop to slowly trim the elevator demand to remove the steady error. The value of <code>PTCH2SRV_I</code> can be increased in small increments of 0.05 until you are satisfied with the speed at which the control loop ‘re-trims’.</li>
+<li>Although the autopilot will prevent the integrator from increasing if the maximum elevator is exceeded, there is additional protection provided by the <a href="parameters.html#ptch2srv-imax">PTCH2SRV_IMAX</a> parameter. This parameter sets the maximum amount of elevator(in centi-degrees) that the integrator can control. The default value of 1500 allows the integrator to trim up to 1/3 of the total elevator travel. This should be enough to allow for the trim offset and variation in trim with speed for most models.</li>
+<li>WARNING : If <code>PTCH2SRV_IMAX</code> is set too high, then there is a danger that in FBW-A, if the model has been levelled so that zero pitch is too nose-up to glide at a safe speed, that the integrator will continue to keep increasing the elevator to maintain the demanded pitch angle until the model stalls. <a href="parameters.html#ptch2srv-imax">PTCH2SRV_IMAX</a> should be set to a value that is big enough to allow from trim changes, but small enough so that it cannot stall the plane.</li>
+<li>The rate of pitch (and therefore the reduce the number of g’s) used to correct pitch angle errors can be limited setting the pitch rate limit <code>PTCH2SRV_RMAX_DN</code> and <code>PTCH2SRV_RMAX_UP</code> parameters to non-zero values. Setting these values to 560 divided by the airspeed (in metres/second) gives a limit equivalent to approximately +- 1g.</li>
+<li>The time constant parameter <code>PTCH2SRV_TCONST</code> can also be used to adjust how rapidly the pitch angle reaches the demanded value. The effect of this parameter will be seen mostly in the response to small step changes in demanded pitch. For larger pitch demands, the pitch rate limits <code>PTCH2SRV_RMAX_DN</code> and <code>PTCH2SRV_RMAX_UP</code> tend to mask its effect. Making this parameter smaller will cause the aircraft to reach its demanded pitch angle in less time, but only if the aircraft is capable. A very slow responding airframe may require a slightly larger setting for this parameter.</li>
+<li>Plot the pitch_speed in the tuning window. This shows the rate of pitch in radians/second. A value of 1 radian/second is approximately equal to 60 degrees/second (57 to be more precise), so if for example you had <code>PTCH2SRV_RMAX_DN</code>/UP set to 30, the maximum pitch_speed when responding to a large pitch angle demand (eg full pitch one way to full pitch the other way) should be just above 0.5. A value of greater than 0.6 would indicate that <code>PTCH2SRV_P</code> is too high and should be reduced, whereas a value of less than 0.5 would indicate that <a href="parameters.html#rll2srv-p">RLL2SRV_P</a> should be increased.</li>
+</ul>
+<h2 id="Yaw-Controller-Tuning"><a href="#Yaw-Controller-Tuning" class="headerlink" title="Yaw Controller Tuning"></a>Yaw Controller Tuning</h2><p>The yaw control loop can be configured either as a simple yaw damper (good for models with inadequate fin area) or as a combined yaw damper and side-slip controller. Because control of side-slip uses measured lateral acceleration, it will only work for those models that have enough fuselage side area to produce a measurable lateral acceleration when they side-slip (an extreme example of this is an aerobatic model flying a knife-edge manoeuver where all of the lift is produced by the fuselage). Gliders with slender fuselages and flying wings cannot use this feature, but can still benefit from the yaw damper provided they have a yaw control (rudder, differential airbrakes, etc)</p>
+<h2 id="Tuning-the-yaw-damper"><a href="#Tuning-the-yaw-damper" class="headerlink" title="Tuning the yaw damper"></a>Tuning the yaw damper</h2><ol>
+<li>Verify that the <code>YAW2SRV_SLIP</code> and <code>YAW2SRV_INT</code> gain terms are set to zero, the <code>YAW2SRV_RLL</code> gain term is set to 1.0 and the <code>YAW2SRV_DAMP</code> gain term is set to zero</li>
+<li>Now rapidly roll the model from maximum bank angle in one direction to maximum bank angle in the opposite direction. Do this several times going in each direction and observe the yawing motion of the model. If as the wings pass through level the nose is yawed in the opposite direction to the roll (for example when rolling from left to right bank, the nose points left) then increase the value of <code>KFF_RDDRMIX</code> gain until the yaw goes away. Do not use a value larger than 1.</li>
+<li>Increase <a href="parameters.html#yaw2srv-damp">YAW2SRV_DAMP</a> in small increments of 0.05 until the yaw angle starts to oscillate. When this happens, the tail will appear to ‘wag’. Halve the gain from the value that caused the oscillation.</li>
+<li>Now roll the model into and out of turns in both directions. If the model has a tendency to yaw the nose to the outside of the turn, then increase the <a href="parameters.html#yaw2srv-rll">YAW2SRV_RLL</a> gain term in increments of 0.05 from its default value of 1.0. Conversely if the model has a tendency to yaw the nose to the inside of the turn on turn entry, then reduce the <a href="parameters.html#yaw2srv-rll">YAW2SRV_RLL</a> gain term in increments of 0.01 from its default value of 1.0. If you have to go outside the range from 0.7 to 1.4, then there is something else that needs to be sorted and you should check that you have performed step 2) correctly and check your airspeed calibration if airspeed is being used.</li>
+</ol>
+<h2 id="Tuning-the-sideslip-controller"><a href="#Tuning-the-sideslip-controller" class="headerlink" title="Tuning the sideslip controller"></a>Tuning the sideslip controller</h2><ol>
+<li>Tune the yaw damper first</li>
+<li>Bring up the tuning graph window in the mission planner and plot the lateral acceleration ay.</li>
+<li>Roll the model rapidly from full bank in each direction and observe the lateral acceleration ay. If the lateral acceleration sits around zero and doesn’t change when you roll into or out of turns then no side-slip control is necessary. You can finish at this point.</li>
+<li>Set the <code>YAW2SRV_INT</code> gain term to 1.0. If this causes the yaw angle to oscillate then halve the gain from the smallest value that causes oscillation.</li>
+<li>If you see that the y acceleration is offset or spikes up during turns, then progressively increase the <code>YAW2SRV_SLIP</code> gain in steps of 0.5 until the error goes away or the yaw angle starts to oscillate. If yaw oscillation occurs, then halve the gain from the value at which caused the oscillation.</li>
+</ol>
+<h2 id="Controller-Overview"><a href="#Controller-Overview" class="headerlink" title="Controller Overview"></a>Controller Overview</h2><h3 id="Roll-Controller"><a href="#Roll-Controller" class="headerlink" title="Roll Controller"></a>Roll Controller</h3><p><img src="https://ardupilot.org/plane/_images/rollAP.jpg" alt=""></p>
+<h3 id="Pitch-Controller"><a href="#Pitch-Controller" class="headerlink" title="Pitch Controller"></a>Pitch Controller</h3><p><img src="https://ardupilot.org/plane/_images/PitchAP.jpg" alt=""></p>
+<h3 id="Yaw-Controller"><a href="#Yaw-Controller" class="headerlink" title="Yaw Controller"></a>Yaw Controller</h3><p><img src="https://ardupilot.org/plane/_images/latAP.jpg" alt=""></p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2020/07/09/Roll,%20Pitch%20and%20Yaw%20Controller%20Tuning/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
         
-          <a class="article-more-a" href="/2020/04/20/%E4%BC%A0%E6%84%9F%E5%99%A8/#more">more >></a>
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-Ardupilot飞控姿态角与姿态角速度控制过程分析" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/06/06/Ardupilot%E9%A3%9E%E6%8E%A7%E5%A7%BF%E6%80%81%E8%A7%92%E4%B8%8E%E5%A7%BF%E6%80%81%E8%A7%92%E9%80%9F%E5%BA%A6%E6%8E%A7%E5%88%B6%E8%BF%87%E7%A8%8B%E5%88%86%E6%9E%90/">Ardupilot飞控姿态角与姿态角速度控制过程分析</a>
+    </h1>
+  
+
+        
+        <a href="/2020/06/06/Ardupilot%E9%A3%9E%E6%8E%A7%E5%A7%BF%E6%80%81%E8%A7%92%E4%B8%8E%E5%A7%BF%E6%80%81%E8%A7%92%E9%80%9F%E5%BA%A6%E6%8E%A7%E5%88%B6%E8%BF%87%E7%A8%8B%E5%88%86%E6%9E%90/" class="archive-article-date">
+  	<time datetime="2020-06-06T13:17:08.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-06-06</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h3><h3 id="文章目录"><a href="#文章目录" class="headerlink" title="文章目录"></a>文章目录</h3><ul>
+<li><a href="#_2">目录</a></li>
+<li><p><a href="#_5">摘要</a></p>
+</li>
+<li><p><a href="#1_11">1.自稳模式初始化</a></p>
+</li>
+<li><p><a href="#2_44">2.自稳模式更新函数</a></p>
+</li>
+<li><p><a href="#45004500_212">**这个代码主要把横滚输入，俯仰输入量转换成目标角度需要的范围，也就是+4500，-4500**</a></p>
+</li>
+<li><p><a href="#3_598">3.姿态角速度代码控制过程分析</a></p>
+</li>
+<li><a href="#4PWM_793">4.电机PWM控制运算</a>
+        
+          <a class="article-more-a" href="/2020/06/06/Ardupilot%E9%A3%9E%E6%8E%A7%E5%A7%BF%E6%80%81%E8%A7%92%E4%B8%8E%E5%A7%BF%E6%80%81%E8%A7%92%E9%80%9F%E5%BA%A6%E6%8E%A7%E5%88%B6%E8%BF%87%E7%A8%8B%E5%88%86%E6%9E%90/#more">more >></a>
         
       
 
@@ -539,7 +1189,7 @@
 
       
         <p class="article-more-link">
-          <a class="article-more-a" href="/2020/04/20/%E4%BC%A0%E6%84%9F%E5%99%A8/">展开全文 >></a>
+          <a class="article-more-a" href="/2020/06/06/Ardupilot%E9%A3%9E%E6%8E%A7%E5%A7%BF%E6%80%81%E8%A7%92%E4%B8%8E%E5%A7%BF%E6%80%81%E8%A7%92%E9%80%9F%E5%BA%A6%E6%8E%A7%E5%88%B6%E8%BF%87%E7%A8%8B%E5%88%86%E6%9E%90/">展开全文 >></a>
         </p>
       
 
@@ -569,30 +1219,34 @@
 
 
   
-    <article id="post-感知机学习方法" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-倾转过程分析" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2020/04/19/%E6%84%9F%E7%9F%A5%E6%9C%BA%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/">感知机学习方法</a>
+      <a class="article-title" href="/2020/06/05/%E5%80%BE%E8%BD%AC%E8%BF%87%E7%A8%8B%E5%88%86%E6%9E%90/">倾转过程分析</a>
     </h1>
   
 
         
-        <a href="/2020/04/19/%E6%84%9F%E7%9F%A5%E6%9C%BA%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/" class="archive-article-date">
-  	<time datetime="2020-04-19T04:21:16.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-19</time>
+        <a href="/2020/06/05/%E5%80%BE%E8%BD%AC%E8%BF%87%E7%A8%8B%E5%88%86%E6%9E%90/" class="archive-article-date">
+  	<time datetime="2020-06-05T12:48:11.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-06-05</time>
 </a>
         
       </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h1 id="1-学习规则"><a href="#1-学习规则" class="headerlink" title="1 学习规则"></a>1 学习规则</h1><p>学习规则是指修改网络权值和偏置值的方法和过程，也称为训练算法。学习规则是为了训练网络来完成某些任务。学习规则可以归纳为三大类：有监督学习、无监督学习和增强（评分）学习。<br>
-        
-          <a class="article-more-a" href="/2020/04/19/%E6%84%9F%E7%9F%A5%E6%9C%BA%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/#more">more >></a>
-        
+        <p>我们实验时符合的是<strong>TRANSITION_AIRSPEED_WAIT</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">switch</span> (transition_state) &#123;</span><br><span class="line">    <span class="comment">//空速等待</span></span><br><span class="line">    <span class="keyword">case</span> TRANSITION_AIRSPEED_WAIT: &#123;</span><br><span class="line">        <span class="comment">//我们的实验应该符合这种情况，处于空速等待阶段，经过一系列计算，姿态控制，位置控制后，进入电机输出，最终还是进入到AP_MotorTilsitter计算</span></span><br><span class="line">        motors-&gt;set_desired_spool_state(AP_Motors::DesiredSpoolState::THROTTLE_UNLIMITED);</span><br><span class="line">        <span class="comment">// we hold in hover until the required airspeed is reached</span></span><br><span class="line">        <span class="keyword">if</span> (transition_start_ms == <span class="number">0</span>) &#123;</span><br><span class="line">            gcs().send_text(MAV_SEVERITY_INFO, <span class="string">"Transition airspeed wait"</span>);</span><br><span class="line">            transition_start_ms = now;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        transition_low_airspeed_ms = now;</span><br><span class="line">        <span class="keyword">if</span> (have_airspeed &amp;&amp; aspeed &gt; plane.aparm.airspeed_min &amp;&amp; !assisted_flight) &#123;</span><br><span class="line">            transition_state = TRANSITION_TIMER;</span><br><span class="line">            gcs().send_text(MAV_SEVERITY_INFO, <span class="string">"Transition airspeed reached %.1f"</span>, (<span class="keyword">double</span>)aspeed);</span><br><span class="line">        &#125;</span><br><span class="line">        assisted_flight = <span class="literal">true</span>;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// do not allow a climb on the quad motors during transition</span></span><br><span class="line">        <span class="comment">// a climb would add load to the airframe, and prolongs the</span></span><br><span class="line">        <span class="comment">// transition</span></span><br><span class="line">        <span class="keyword">float</span> climb_rate_cms = assist_climb_rate_cms();</span><br><span class="line">        <span class="keyword">if</span> (options &amp; OPTION_LEVEL_TRANSITION) &#123;</span><br><span class="line">            climb_rate_cms = MIN(climb_rate_cms, <span class="number">0.0f</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        hold_hover(climb_rate_cms);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// set desired yaw to current yaw in both desired angle and</span></span><br><span class="line">        <span class="comment">// rate request. This reduces wing twist in transition due to</span></span><br><span class="line">        <span class="comment">// multicopter yaw demands</span></span><br><span class="line">        attitude_control-&gt;set_yaw_target_to_current_heading();</span><br><span class="line">        attitude_control-&gt;rate_bf_yaw_target(ahrs.get_gyro().z);</span><br><span class="line"></span><br><span class="line">        last_throttle = motors-&gt;get_throttle();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// reset integrators while we are below target airspeed as we</span></span><br><span class="line">        <span class="comment">// may build up too much while still primarily under</span></span><br><span class="line">        <span class="comment">// multicopter control</span></span><br><span class="line">        plane.pitchController.reset_I();</span><br><span class="line">        plane.rollController.reset_I();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// give full authority to attitude control</span></span><br><span class="line">        attitude_control-&gt;set_throttle_mix_max(<span class="number">1.0f</span>);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>经过一列的计算，姿态控制，位置控制，最后跳出<strong>switch_case</strong>循环，进入<strong>motors_output()</strong>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">QuadPlane::motors_output</span><span class="params">(<span class="keyword">bool</span> run_rate_controller)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (run_rate_controller) &#123;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//多旋翼的速率控制器</span></span><br><span class="line">        attitude_control-&gt;rate_controller_run();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> ADVANCED_FAILSAFE == ENABLED</span></span><br><span class="line">    <span class="keyword">if</span> (!hal.util-&gt;get_soft_armed() ||</span><br><span class="line">        (plane.afs.should_crash_vehicle() &amp;&amp; !plane.afs.terminating_vehicle_via_landing()) ||</span><br><span class="line">         SRV_Channels::get_emergency_stop()) &#123;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line">    <span class="keyword">if</span> (!hal.util-&gt;get_soft_armed() || SRV_Channels::get_emergency_stop()) &#123;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">        motors-&gt;set_desired_spool_state(AP_Motors::DesiredSpoolState::SHUT_DOWN);</span><br><span class="line">        <span class="comment">//给电机发送命令</span></span><br><span class="line">        motors-&gt;output();</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//当飞机处于自稳模式时会进行电调校准确认</span></span><br><span class="line">    <span class="keyword">if</span> (esc_calibration &amp;&amp; AP_Notify::flags.esc_calibration &amp;&amp; plane.control_mode == &amp;plane.mode_qstabilize) &#123;</span><br><span class="line">        <span class="comment">// output is direct from run_esc_calibration()</span></span><br><span class="line">        <span class="comment">//输出直接来自run_esc_calibration（）</span></span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//过渡模式</span></span><br><span class="line">    <span class="keyword">if</span> (in_tailsitter_vtol_transition()) &#123;</span><br><span class="line">        <span class="comment">/*</span></span><br><span class="line"><span class="comment">          don't run the motor outputs while in tailsitter-&gt;vtol</span></span><br><span class="line"><span class="comment">          transition. That is taken care of by the fixed wing</span></span><br><span class="line"><span class="comment">          stabilisation code</span></span><br><span class="line"><span class="comment">                          在尾座-&gt;垂直起降转换时，不要运行电机输出。由固定翼稳定代码处理</span></span><br><span class="line"><span class="comment">                          即处在过渡模式时运行固定翼代码</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// see if motors should be shut down</span></span><br><span class="line">    <span class="comment">//看是否需要关闭电机</span></span><br><span class="line">    update_throttle_suppression();</span><br><span class="line">    </span><br><span class="line">    motors-&gt;output();</span><br><span class="line">    <span class="comment">//电机运行</span></span><br><span class="line">    <span class="keyword">if</span> (motors-&gt;armed() &amp;&amp; motors-&gt;get_spool_state() != AP_Motors::SpoolState::SHUT_DOWN) &#123;</span><br><span class="line">        <span class="keyword">const</span> <span class="keyword">uint32_t</span> now = AP_HAL::<span class="built_in">millis</span>();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// log RATE at main loop rate</span></span><br><span class="line">        <span class="comment">//主循环下的日志</span></span><br><span class="line">        plane.logger.Write_Rate(ahrs_view, *motors, *attitude_control, *pos_control);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// log QTUN at 25 Hz</span></span><br><span class="line">        <span class="keyword">if</span> (now - last_qtun_log_ms &gt; <span class="number">40</span>) &#123;</span><br><span class="line">            last_qtun_log_ms = now;</span><br><span class="line">            Log_Write_QControl_Tuning();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// log CTRL at 10 Hz</span></span><br><span class="line">        <span class="keyword">if</span> (now - last_ctrl_log_ms &gt; <span class="number">100</span>) &#123;</span><br><span class="line">            last_ctrl_log_ms = now;</span><br><span class="line">            attitude_control-&gt;control_monitor_log();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>进入这个里面的<strong>motors-&gt;output</strong>,这个将跳入到电机库中，因为我们机架构型选的是尾座式，所以将进入我们更改过的那个函数中。所以在切换模式时会出现总矩增大的情况。</p>
+<p>接下来需要修改的就是固定翼模式下的油门了，因为固定翼模式下应该不仅如此AP_Motors中，所有的控制，俯仰，滚转，偏航，油门（此构型是靠总矩）都是靠舵机完成。在ArduPlane下<strong>servos.cpp</strong>就相当于<strong>AP_Motors</strong>库，二者的作用都是进行动力分配，所以油门应该在<strong>servo.cpp</strong>下进行修改。</p>
+<p>根据师兄留下的文档，在q_stablize下调用的是多旋翼的姿态控制器，到达空速后，继续调用多旋翼的姿态控制器，直到倾转完成</p>
+
       
 
       
@@ -605,7 +1259,7 @@
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">神经网络</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">APM</a>
         		</li>
       		
 		</ul>
@@ -615,7 +1269,7 @@
 
       
         <p class="article-more-link">
-          <a class="article-more-a" href="/2020/04/19/%E6%84%9F%E7%9F%A5%E6%9C%BA%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/">展开全文 >></a>
+          <a class="article-more-a" href="/2020/06/05/%E5%80%BE%E8%BD%AC%E8%BF%87%E7%A8%8B%E5%88%86%E6%9E%90/">展开全文 >></a>
         </p>
       
 
@@ -645,29 +1299,30 @@
 
 
   
-    <article id="post-Quadcopter控制" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-pixhawk基于UART5的NSH环境搭建" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2020/04/15/Quadcopter%E6%8E%A7%E5%88%B6/">Quadcopter控制</a>
+      <a class="article-title" href="/2020/05/29/pixhawk%E5%9F%BA%E4%BA%8EUART5%E7%9A%84NSH%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/">pixhawk基于UART5的NSH环境搭建</a>
     </h1>
   
 
         
-        <a href="/2020/04/15/Quadcopter%E6%8E%A7%E5%88%B6/" class="archive-article-date">
-  	<time datetime="2020-04-15T07:50:15.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-15</time>
+        <a href="/2020/05/29/pixhawk%E5%9F%BA%E4%BA%8EUART5%E7%9A%84NSH%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" class="archive-article-date">
+  	<time datetime="2020-05-29T12:38:23.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-05-29</time>
 </a>
         
       </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h1 id="1-问题描述"><a href="#1-问题描述" class="headerlink" title="1 问题描述"></a>1 问题描述</h1><p>四旋翼飞行器对角线上的两个电机旋转方向相同，另一对与之旋转方向相反。这是使推力，滚转，俯仰，偏航相互独立控制的必要条件。这可以使我们命令其中的一个动作而不影响其他动作。<br>
+        <p><strong>元器件：</strong></p>
+<p>pixhawk、六针杜邦线、USB转uart模块、PC机上的串口调试软件（比如 Putty）<br>
         
-          <a class="article-more-a" href="/2020/04/15/Quadcopter%E6%8E%A7%E5%88%B6/#more">more >></a>
+          <a class="article-more-a" href="/2020/05/29/pixhawk%E5%9F%BA%E4%BA%8EUART5%E7%9A%84NSH%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/#more">more >></a>
         
       
 
@@ -691,7 +1346,7 @@
 
       
         <p class="article-more-link">
-          <a class="article-more-a" href="/2020/04/15/Quadcopter%E6%8E%A7%E5%88%B6/">展开全文 >></a>
+          <a class="article-more-a" href="/2020/05/29/pixhawk%E5%9F%BA%E4%BA%8EUART5%E7%9A%84NSH%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/">展开全文 >></a>
         </p>
       
 
@@ -721,30 +1376,26 @@
 
 
   
-    <article id="post-神经网络设计-实例" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-pixhawk串口通讯" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2020/04/13/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E8%AE%BE%E8%AE%A1-%E5%AE%9E%E4%BE%8B/">神经网络设计-实例</a>
+      <a class="article-title" href="/2020/05/29/pixhawk%E4%B8%B2%E5%8F%A3%E9%80%9A%E8%AE%AF/">pixhawk串口通讯</a>
     </h1>
   
 
         
-        <a href="/2020/04/13/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E8%AE%BE%E8%AE%A1-%E5%AE%9E%E4%BE%8B/" class="archive-article-date">
-  	<time datetime="2020-04-13T06:11:54.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-13</time>
+        <a href="/2020/05/29/pixhawk%E4%B8%B2%E5%8F%A3%E9%80%9A%E8%AE%AF/" class="archive-article-date">
+  	<time datetime="2020-05-29T03:37:17.690Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-05-29</time>
 </a>
         
       </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h1 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h1><p>水果分类问题：</p>
-<p>有一台能够根据种类把水果进行分类的机器，机器的传送带上装有传感器，这些传感器可以检测到水果的三种特征：形状、纹理、重量。<br>
-        
-          <a class="article-more-a" href="/2020/04/13/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E8%AE%BE%E8%AE%A1-%E5%AE%9E%E4%BE%8B/#more">more >></a>
         
       
 
@@ -753,176 +1404,11 @@
     <div class="article-info article-info-index">
       
       
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">神经网络</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
       
 
       
         <p class="article-more-link">
-          <a class="article-more-a" href="/2020/04/13/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E8%AE%BE%E8%AE%A1-%E5%AE%9E%E4%BE%8B/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-win10解决未安装任何音频输出设备" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/04/08/win10%E8%A7%A3%E5%86%B3%E6%9C%AA%E5%AE%89%E8%A3%85%E4%BB%BB%E4%BD%95%E9%9F%B3%E9%A2%91%E8%BE%93%E5%87%BA%E8%AE%BE%E5%A4%87/">win10解决未安装任何音频输出设备</a>
-    </h1>
-  
-
-        
-        <a href="/2020/04/08/win10%E8%A7%A3%E5%86%B3%E6%9C%AA%E5%AE%89%E8%A3%85%E4%BB%BB%E4%BD%95%E9%9F%B3%E9%A2%91%E8%BE%93%E5%87%BA%E8%AE%BE%E5%A4%87/" class="archive-article-date">
-  	<time datetime="2020-04-08T09:44:47.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-08</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>最近刚刚更新了一下win10系统，开始啥问题没有，晚上睡觉关机后，第二天开机，小喇叭处有一个红叉，显示未安装任何音频输出设备。查看了微软的官网以及百度了很多解决方法，电脑重启了n遍还是没有解决，一度接近崩溃，我都怀疑我的声卡坏了，但是由于我电脑有两个系统，另一个系统是有声音的，所以确定硬件没换，还是软件的问题。<br>
-        
-          <a class="article-more-a" href="/2020/04/08/win10%E8%A7%A3%E5%86%B3%E6%9C%AA%E5%AE%89%E8%A3%85%E4%BB%BB%E4%BD%95%E9%9F%B3%E9%A2%91%E8%BE%93%E5%87%BA%E8%AE%BE%E5%A4%87/#more">more >></a>
-        
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">计算机系统</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2020/04/08/win10%E8%A7%A3%E5%86%B3%E6%9C%AA%E5%AE%89%E8%A3%85%E4%BB%BB%E4%BD%95%E9%9F%B3%E9%A2%91%E8%BE%93%E5%87%BA%E8%AE%BE%E5%A4%87/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-扩展卡尔曼滤波器" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/04/06/%E6%89%A9%E5%B1%95%E5%8D%A1%E5%B0%94%E6%9B%BC%E6%BB%A4%E6%B3%A2%E5%99%A8/">扩展卡尔曼滤波器</a>
-    </h1>
-  
-
-        
-        <a href="/2020/04/06/%E6%89%A9%E5%B1%95%E5%8D%A1%E5%B0%94%E6%9B%BC%E6%BB%A4%E6%B3%A2%E5%99%A8/" class="archive-article-date">
-  	<time datetime="2020-04-06T13:54:34.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-06</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="1线性系统与非线性系统"><a href="#1线性系统与非线性系统" class="headerlink" title="1线性系统与非线性系统"></a>1线性系统与非线性系统</h1><ul>
-<li>线性系统：状态变量和输出变量对于所有可能的输入变量和初始状态都满足叠加原理的系统。一个由线性元部件所组成的系统必是线性系统。但是，相反的命题在某些情况下可能不成立。线性系统的状态变量(或输出变量)与输入变量间的因果关系可用一组线性微分方程或差分方程来描述，这种方程称为系统的数学模型。</li>
-<li>非线性系统：一个系统，如果其输出不与其输入成正比，则它是非线性的。从数学上看，非线性系统的特征是叠加原理不再成立。叠加原理是指描述系统的方程的两个解之和仍为其解。叠加原理可以通过两种方式失效。其一，方程本身是非线性的。其二，方程本身虽然是线性的，但边界是未知的或运动的。
-        
-          <a class="article-more-a" href="/2020/04/06/%E6%89%A9%E5%B1%95%E5%8D%A1%E5%B0%94%E6%9B%BC%E6%BB%A4%E6%B3%A2%E5%99%A8/#more">more >></a>
-        
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">APM</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2020/04/06/%E6%89%A9%E5%B1%95%E5%8D%A1%E5%B0%94%E6%9B%BC%E6%BB%A4%E6%B3%A2%E5%99%A8/">展开全文 >></a>
+          <a class="article-more-a" href="/2020/05/29/pixhawk%E4%B8%B2%E5%8F%A3%E9%80%9A%E8%AE%AF/">展开全文 >></a>
         </p>
       
 
@@ -954,7 +1440,7 @@
   
   
     <nav id="page-nav">
-      <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/">Next &amp;raquo;</a>
+      <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/2/">Next &amp;raquo;</a>
     </nav>
   
 
@@ -966,7 +1452,7 @@
   <div class="outer">
     <div id="footer-info">
     	<div class="footer-left">
-    		&copy; 2020 若枫
+    		&copy; 2021 若枫
     	</div>
       	<div class="footer-right">
       		<a href="http://hexo.io/" target="_blank">Hexo</a>  Theme <a href="https://github.com/litten/hexo-theme-yilia" target="_blank">Yilia</a> by Litten
