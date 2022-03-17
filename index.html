@@ -198,6 +198,82 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-LQR制导" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/03/17/LQR%E5%88%B6%E5%AF%BC/">LQR制导</a>
+    </h1>
+  
+
+        
+        <a href="/2022/03/17/LQR%E5%88%B6%E5%AF%BC/" class="archive-article-date">
+  	<time datetime="2022-03-17T09:18:32.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-03-17</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="LQR制导"><a href="#LQR制导" class="headerlink" title="LQR制导"></a>LQR制导</h1><h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>在ardupilot中固定翼飞机横航向位置控制（制导律）采用L1制导律，最近想将一些其他的控制理论用于ardupilot代码中，通过ardupilot论坛，看到已经有大佬曾经将L1用于固定翼制导律，并且已经向ardupilot官方github中pr了，但是由于pr的方式有误，被官方驳回了，但是我还是通过连接查到了大佬的代码，并且自己尝试了一下，已经编译通过并进行了仿真，后面我会把链接放到文章结尾。欢迎大家一起来讨论。<br>
+        
+          <a class="article-more-a" href="/2022/03/17/LQR%E5%88%B6%E5%AF%BC/#more">more >></a>
+        
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">成为一名飞控工程师</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2022/03/17/LQR%E5%88%B6%E5%AF%BC/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-自抗扰控制器" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -1399,86 +1475,6 @@ MAVLINK_HELPER void _mav_finalize_message_chan_send(mavlink_channel_t chan, uint
 
 
   
-    <article id="post-倾转过程分析" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/06/05/%E5%80%BE%E8%BD%AC%E8%BF%87%E7%A8%8B%E5%88%86%E6%9E%90/">倾转过程分析</a>
-    </h1>
-  
-
-        
-        <a href="/2020/06/05/%E5%80%BE%E8%BD%AC%E8%BF%87%E7%A8%8B%E5%88%86%E6%9E%90/" class="archive-article-date">
-  	<time datetime="2020-06-05T12:48:11.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-06-05</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>我们实验时符合的是<strong>TRANSITION_AIRSPEED_WAIT</strong></p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">switch</span> (transition_state) &#123;</span><br><span class="line">    <span class="comment">//空速等待</span></span><br><span class="line">    <span class="keyword">case</span> TRANSITION_AIRSPEED_WAIT: &#123;</span><br><span class="line">        <span class="comment">//我们的实验应该符合这种情况，处于空速等待阶段，经过一系列计算，姿态控制，位置控制后，进入电机输出，最终还是进入到AP_MotorTilsitter计算</span></span><br><span class="line">        motors-&gt;set_desired_spool_state(AP_Motors::DesiredSpoolState::THROTTLE_UNLIMITED);</span><br><span class="line">        <span class="comment">// we hold in hover until the required airspeed is reached</span></span><br><span class="line">        <span class="keyword">if</span> (transition_start_ms == <span class="number">0</span>) &#123;</span><br><span class="line">            gcs().send_text(MAV_SEVERITY_INFO, <span class="string">"Transition airspeed wait"</span>);</span><br><span class="line">            transition_start_ms = now;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        transition_low_airspeed_ms = now;</span><br><span class="line">        <span class="keyword">if</span> (have_airspeed &amp;&amp; aspeed &gt; plane.aparm.airspeed_min &amp;&amp; !assisted_flight) &#123;</span><br><span class="line">            transition_state = TRANSITION_TIMER;</span><br><span class="line">            gcs().send_text(MAV_SEVERITY_INFO, <span class="string">"Transition airspeed reached %.1f"</span>, (<span class="keyword">double</span>)aspeed);</span><br><span class="line">        &#125;</span><br><span class="line">        assisted_flight = <span class="literal">true</span>;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// do not allow a climb on the quad motors during transition</span></span><br><span class="line">        <span class="comment">// a climb would add load to the airframe, and prolongs the</span></span><br><span class="line">        <span class="comment">// transition</span></span><br><span class="line">        <span class="keyword">float</span> climb_rate_cms = assist_climb_rate_cms();</span><br><span class="line">        <span class="keyword">if</span> (options &amp; OPTION_LEVEL_TRANSITION) &#123;</span><br><span class="line">            climb_rate_cms = MIN(climb_rate_cms, <span class="number">0.0f</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        hold_hover(climb_rate_cms);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// set desired yaw to current yaw in both desired angle and</span></span><br><span class="line">        <span class="comment">// rate request. This reduces wing twist in transition due to</span></span><br><span class="line">        <span class="comment">// multicopter yaw demands</span></span><br><span class="line">        attitude_control-&gt;set_yaw_target_to_current_heading();</span><br><span class="line">        attitude_control-&gt;rate_bf_yaw_target(ahrs.get_gyro().z);</span><br><span class="line"></span><br><span class="line">        last_throttle = motors-&gt;get_throttle();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// reset integrators while we are below target airspeed as we</span></span><br><span class="line">        <span class="comment">// may build up too much while still primarily under</span></span><br><span class="line">        <span class="comment">// multicopter control</span></span><br><span class="line">        plane.pitchController.reset_I();</span><br><span class="line">        plane.rollController.reset_I();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// give full authority to attitude control</span></span><br><span class="line">        attitude_control-&gt;set_throttle_mix_max(<span class="number">1.0f</span>);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-<p>经过一列的计算，姿态控制，位置控制，最后跳出<strong>switch_case</strong>循环，进入<strong>motors_output()</strong>。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">QuadPlane::motors_output</span><span class="params">(<span class="keyword">bool</span> run_rate_controller)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (run_rate_controller) &#123;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//多旋翼的速率控制器</span></span><br><span class="line">        attitude_control-&gt;rate_controller_run();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> ADVANCED_FAILSAFE == ENABLED</span></span><br><span class="line">    <span class="keyword">if</span> (!hal.util-&gt;get_soft_armed() ||</span><br><span class="line">        (plane.afs.should_crash_vehicle() &amp;&amp; !plane.afs.terminating_vehicle_via_landing()) ||</span><br><span class="line">         SRV_Channels::get_emergency_stop()) &#123;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line">    <span class="keyword">if</span> (!hal.util-&gt;get_soft_armed() || SRV_Channels::get_emergency_stop()) &#123;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">        motors-&gt;set_desired_spool_state(AP_Motors::DesiredSpoolState::SHUT_DOWN);</span><br><span class="line">        <span class="comment">//给电机发送命令</span></span><br><span class="line">        motors-&gt;output();</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//当飞机处于自稳模式时会进行电调校准确认</span></span><br><span class="line">    <span class="keyword">if</span> (esc_calibration &amp;&amp; AP_Notify::flags.esc_calibration &amp;&amp; plane.control_mode == &amp;plane.mode_qstabilize) &#123;</span><br><span class="line">        <span class="comment">// output is direct from run_esc_calibration()</span></span><br><span class="line">        <span class="comment">//输出直接来自run_esc_calibration（）</span></span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//过渡模式</span></span><br><span class="line">    <span class="keyword">if</span> (in_tailsitter_vtol_transition()) &#123;</span><br><span class="line">        <span class="comment">/*</span></span><br><span class="line"><span class="comment">          don't run the motor outputs while in tailsitter-&gt;vtol</span></span><br><span class="line"><span class="comment">          transition. That is taken care of by the fixed wing</span></span><br><span class="line"><span class="comment">          stabilisation code</span></span><br><span class="line"><span class="comment">                          在尾座-&gt;垂直起降转换时，不要运行电机输出。由固定翼稳定代码处理</span></span><br><span class="line"><span class="comment">                          即处在过渡模式时运行固定翼代码</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// see if motors should be shut down</span></span><br><span class="line">    <span class="comment">//看是否需要关闭电机</span></span><br><span class="line">    update_throttle_suppression();</span><br><span class="line">    </span><br><span class="line">    motors-&gt;output();</span><br><span class="line">    <span class="comment">//电机运行</span></span><br><span class="line">    <span class="keyword">if</span> (motors-&gt;armed() &amp;&amp; motors-&gt;get_spool_state() != AP_Motors::SpoolState::SHUT_DOWN) &#123;</span><br><span class="line">        <span class="keyword">const</span> <span class="keyword">uint32_t</span> now = AP_HAL::<span class="built_in">millis</span>();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// log RATE at main loop rate</span></span><br><span class="line">        <span class="comment">//主循环下的日志</span></span><br><span class="line">        plane.logger.Write_Rate(ahrs_view, *motors, *attitude_control, *pos_control);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// log QTUN at 25 Hz</span></span><br><span class="line">        <span class="keyword">if</span> (now - last_qtun_log_ms &gt; <span class="number">40</span>) &#123;</span><br><span class="line">            last_qtun_log_ms = now;</span><br><span class="line">            Log_Write_QControl_Tuning();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// log CTRL at 10 Hz</span></span><br><span class="line">        <span class="keyword">if</span> (now - last_ctrl_log_ms &gt; <span class="number">100</span>) &#123;</span><br><span class="line">            last_ctrl_log_ms = now;</span><br><span class="line">            attitude_control-&gt;control_monitor_log();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-<p>进入这个里面的<strong>motors-&gt;output</strong>,这个将跳入到电机库中，因为我们机架构型选的是尾座式，所以将进入我们更改过的那个函数中。所以在切换模式时会出现总矩增大的情况。</p>
-<p>接下来需要修改的就是固定翼模式下的油门了，因为固定翼模式下应该不仅如此AP_Motors中，所有的控制，俯仰，滚转，偏航，油门（此构型是靠总矩）都是靠舵机完成。在ArduPlane下<strong>servos.cpp</strong>就相当于<strong>AP_Motors</strong>库，二者的作用都是进行动力分配，所以油门应该在<strong>servo.cpp</strong>下进行修改。</p>
-<p>根据师兄留下的文档，在q_stablize下调用的是多旋翼的姿态控制器，到达空速后，继续调用多旋翼的姿态控制器，直到倾转完成</p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">APM</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2020/06/05/%E5%80%BE%E8%BD%AC%E8%BF%87%E7%A8%8B%E5%88%86%E6%9E%90/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
   
     <nav id="page-nav">
       <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/2/">Next &amp;raquo;</a>
@@ -1621,6 +1617,10 @@ MathJax.Hub.Queue(function() {
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">飞行器理论知识</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">成为一名飞控工程师</a>
               </li>
             
             <div class="clearfix"></div>

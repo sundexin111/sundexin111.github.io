@@ -6,19 +6,14 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>Channel解读 | Hexo</title>
+  <title>Archives: 2022 | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="本文转载于https:&#x2F;&#x2F;blog.csdn.net&#x2F;alvin_jack&#x2F;article&#x2F;details&#x2F;77043579?utm_source&#x3D;blogxgwz9">
-<meta property="og:type" content="article">
-<meta property="og:title" content="Channel解读">
-<meta property="og:url" content="http://yoursite.com/2020/05/22/Channel%E8%A7%A3%E8%AF%BB/index.html">
+  <meta property="og:type" content="website">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://yoursite.com/archives/2022/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="本文转载于https:&#x2F;&#x2F;blog.csdn.net&#x2F;alvin_jack&#x2F;article&#x2F;details&#x2F;77043579?utm_source&#x3D;blogxgwz9">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2020-05-22T02:51:04.000Z">
-<meta property="article:modified_time" content="2020-05-22T02:53:07.789Z">
 <meta property="article:author" content="若枫">
-<meta property="article:tag" content="APM">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternative" href="/atom.xml" title="Hexo" type="application/atom+xml">
@@ -202,733 +197,59 @@
           </div>
           <div id="js-content" class="content-ll">
             
-<article id="post-Channel解读" class="article article-type-post " itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
   
-    <h1 class="article-title" itemprop="name">
-      Channel解读
+  
+    
+    
+      
+      
+      <section class="archives-wrap">
+        <div class="archive-year-wrap">
+          <a href="/archives/2022" class="archive-year">2022</a>
+        </div>
+        <div class="archives">
+    
+    <article class="archive-article archive-type-post">
+  <div class="archive-article-inner">
+    <header class="archive-article-header">
+      	<div class="article-meta">
+	      	<a href="/2022/03/17/LQR%E5%88%B6%E5%AF%BC/" class="archive-article-date">
+  	<time datetime="2022-03-17T09:18:32.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-03-17</time>
+</a>
+        </div>
+    	 
+  
+    <h1 itemprop="name">
+      <a class="archive-article-title" href="/2022/03/17/LQR%E5%88%B6%E5%AF%BC/">LQR制导</a>
     </h1>
   
 
-        
-        <a href="/2020/05/22/Channel%E8%A7%A3%E8%AF%BB/" class="archive-article-date">
-  	<time datetime="2020-05-22T02:51:04.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-05-22</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>本文转载于<a href="https://blog.csdn.net/alvin_jack/article/details/77043579?utm_source=blogxgwz9" target="_blank" rel="noopener">https://blog.csdn.net/alvin_jack/article/details/77043579?utm_source=blogxgwz9</a><br><a id="more"></a></p>
-<h2 id="数据结构"><a href="#数据结构" class="headerlink" title="数据结构"></a>数据结构</h2><pre><code> 首先分析的入口是从Rover::read_radio()的函数进行，我们就从这里为入口并作为本次分析的主线来进行阐述：
-
-
-void Rover::read_radio()
-{
-//1如果没有新的RC信号，执行失控保护
-  if (!hal.rcin-&gt;new_input()) {
-  control_failsafe(channel_throttle-&gt;get_radio_in());
-  return;
-  }
-
-  failsafe.last_valid_rc_ms = AP_HAL::millis();
-
-  //获取所有RC通道,并根据初始设定的方式[angle/range]按设置范围归一化保存至control_in中
-  RC_Channels::set_pwm_all();
-
-  control_failsafe(channel_throttle-&gt;get_radio_in());
-
-  //2处理伺服辅助功能
-  SRV_Channels::set_output_scaled(SRV_Channel::k_throttle,channel_throttle-&gt;get_control_in());
-
-  // Check if the throttle value is above 50% and we need to nudge
-  // Make sure its above 50% in the direction we are travelling
-  ....
-  ...
-  ..
-
-  //3开启舵机平滑
-  if (g.skid_steer_in) {
-  // convert the two radio_in values from skid steering values
-
-  float motor1 = channel_steer-&gt;norm_input();
-  float motor2 = channel_throttle-&gt;norm_input();
-  float steering_scaled = motor1 - motor2;
-  float throttle_scaled = 0.5f*(motor1 + motor2);
-  int16_t steer = channel_steer-&gt;get_radio_trim();
-  int16_t thr = channel_throttle-&gt;get_radio_trim();
-  channel_steer-&gt;set_pwm(steer);
-  channel_throttle-&gt;set_pwm(thr);
-  ....
-  ...
-  ..
-
-  //4舵机解锁检测
-  rudder_arm_disarm_check();
-}
-</code></pre><p>这里涉及到的几个对象单独罗列出来进行分析：<br>RC_Channel<br>RC_Channels<br>SRV_Channel<br>SRV_Channels</p>
-<h2 id="RC-Channels"><a href="#RC-Channels" class="headerlink" title="RC_Channels"></a>RC_Channels</h2><pre><code> 首先是RC_Channels，从下面的定义来看内部定义了很多静态函数，并定义了定义了一组RC_Channel的数组以及指针，RC_Channels::set_pwm_all(void)的主要作用直接读取hal.rcin的值按range/angle转换并保存至control_in中；这里先不深入研究。
-
-
-/*
-  class RC_Channels. Hold the full set of RC_Channel objects
-*/
-class RC_Channels {
-public:
-  friend class SRV_Channels;                          #申明SRV_Channels是其友元类
-  // constructor
-  RC_Channels(void);                                  #构造函数，并对channels[i].ch_in赋值通道号
-
-  static const struct AP_Param::GroupInfo var_info[];
-
-  static RC_Channel *rc_channel(uint8_t chan) {     　#返回RC_Channles[chan]指针
-  return (chan &lt; NUM_RC_CHANNELS)?&amp;channels[chan]:nullptr;
-  }
-
-  static void set_pwm_all(void);
-
-private:
-  // this static arrangement is to avoid static pointers in AP_Param tables
-  static RC_Channel *channels;                       #指向obj_channels[NUM_RC_CHANNELS]的首地址
-  RC_Channel obj_channels[NUM_RC_CHANNELS];
-};
-</code></pre><p>总的来说RC_Channels就是一个定义了RC_Channel数组长度[16]且具备操作所有通道的输出的类;</p>
-<h2 id="RC-Channel"><a href="#RC-Channel" class="headerlink" title="RC_Channel"></a>RC_Channel</h2><pre><code> 接下来就是RC_Channel，主要是抽象出了单个通道的数据结构，下面先从成员变量进行分析；
-
-
-/// @class RC_Channel
-/// @brief Object managing one RC channel
-class RC_Channel {
-public:
-  friend class SRV_Channels;
-  friend class RC_Channels;
-  // Constructor
-  RC_Channel(void);
-
-  // used to get min/max/trim limit value based on _reverse
-  enum LimitValue {
-  RC_CHANNEL_LIMIT_TRIM,
-  RC_CHANNEL_LIMIT_MIN,
-  RC_CHANNEL_LIMIT_MAX
-  };
-
-  // startup
-  void load_eeprom(void);
-  void save_eeprom(void);
-  void save_trim(void);
-
-  // setup the control preferences，设置获取通道数值范围/反相/死区的方法
-  void set_range(uint16_t high);
-  void set_angle(uint16_t angle);
-  bool get_reverse(void) const;
-  void set_default_dead_zone(int16_t dzone);
-  uint16_t get_dead_zone(void) const { return dead_zone; }
-
-  // get the center stick position expressed as a control_in value
-  int16_t get_control_mid() const;
-
-  // read input from hal.rcin - create a control_in value
-  void set_pwm(int16_t pwm);
-  void set_pwm_no_deadzone(int16_t pwm);
-
-  // calculate an angle given dead_zone and trim. This is used by the quadplane code
-  // for hover throttle
-  int16_t pwm_to_angle_dz_trim(uint16_t dead_zone, uint16_t trim);
-
-  /*
-  return a normalised input for a channel, in range -1 to 1,
-  centered around the channel trim. Ignore deadzone.
-  归一化通道的数值为[-1,1]
-  */
-  float norm_input();
-
-  /*
-  return a normalised input for a channel, in range -1 to 1,
-  centered around the channel trim. Take into account the deadzone
-  归一化通道的数值为[-1,1],增加死区
-  */
-  float norm_input_dz();
-
-  uint8_t percent_input();
-  int16_t pwm_to_range();
-  int16_t pwm_to_range_dz(uint16_t dead_zone);
-
-  // read the input value from hal.rcin for this channel，从硬件抽象层中获取RC信号
-  uint16_t read() const;
-
-  // read input from hal.rcin and set as pwm input for channel
-  void input();
-
-  static const struct AP_Param::GroupInfo var_info[];
-
-  // return true if input is within deadzone of trim
-  bool in_trim_dz();
-
-  int16_t get_radio_in() const { return radio_in;}
-  void set_radio_in(int16_t val) {radio_in = val;}
-
-  int16_t get_control_in() const { return control_in;}
-  void set_control_in(int16_t val) { control_in = val;}
-
-  // get control input with zero deadzone
-  int16_t get_control_in_zero_dz(void);
-
-  int16_t get_radio_min() const {return radio_min.get();}
-  void set_radio_min(int16_t val) { radio_min = val;}
-
-  int16_t get_radio_max() const {return radio_max.get();}
-  void set_radio_max(int16_t val) {radio_max = val;}
-
-  int16_t get_radio_trim() const { return radio_trim.get();}
-  void set_radio_trim(int16_t val) { radio_trim.set(val);}
-  void save_radio_trim() { radio_trim.save();}
-
-  bool min_max_configured() const
-  {
-  return radio_min.configured() &amp;&amp; radio_max.configured();
-  }
-
-private:
-
-  // pwm is stored here
-  // RC通道读出的原始值的保存位置
-  int16_t radio_in;
-
-  // value generated from PWM normalised to configured scale
-  // RC通道原始值经过归一化和配置后的保存位置
-  int16_t control_in;
-
-  AP_Int16 radio_min;     #RC通道原始值的最小值
-  AP_Int16 radio_trim;    #RC通道原始值的中位值
-  AP_Int16 radio_max;     #RC通道原始值的最大值
-
-  AP_Int8 reversed;       ＃RC通道反相标志
-  AP_Int16 dead_zone;     ＃RC通道死区
-
-  uint8_t type_in;        ＃RC输入值类型是角度还是范围
-  int16_t high_in;
-
-  // the input channel this corresponds to
-  uint8_t ch_in;          ＃RC通道号
-
-  int16_t pwm_to_angle();
-  int16_t pwm_to_angle_dz(uint16_t dead_zone);
-};
-
-
- 所有从上面的数据结构就可以看出，RC_Channel抽象的RC通道如上面注释所描述，其成员函数主要是围绕变量的设置...
-</code></pre><p>在初始的通道号分配时，还涉及到RCMapper rcmap，这个主要是通道映射，在其构造函数中，通过const AP_Param::GroupInfo RCMapper::var_info[]对其成员变量进行赋值，根本上还是对通道进行映射；</p>
-<h2 id="RCMapper"><a href="#RCMapper" class="headerlink" title="RCMapper"></a>RCMapper</h2><pre><code>class RCMapper
-{
-public:
-  /// Constructor
-  ///
-  RCMapper();
-
-  /// roll - return input channel number for roll / aileron input
-  uint8_t roll() const { return _ch_roll; }
-
-  /// pitch - return input channel number for pitch / elevator input
-  uint8_t pitch() const { return _ch_pitch; }
-
-  /// throttle - return input channel number for throttle input
-  uint8_t throttle() const { return _ch_throttle; }
-
-  /// yaw - return input channel number for yaw / rudder input
-  uint8_t yaw() const { return _ch_yaw; }
-
-  /// forward - return input channel number for forward input
-  uint8_t forward() const { return _ch_forward; }
-
-  /// lateral - return input channel number for lateral input
-  uint8_t lateral() const { return _ch_lateral; }
-
-  static const struct AP_Param::GroupInfo var_info[];
-
-private:
-  // channel mappings
-  AP_Int8 _ch_roll;
-  AP_Int8 _ch_pitch;
-  AP_Int8 _ch_yaw;
-  AP_Int8 _ch_throttle;
-  AP_Int8 _ch_forward;
-  AP_Int8 _ch_lateral;
-};
-const AP_Param::GroupInfo RCMapper::var_info[] = {
-  // @Param: ROLL
-  // @DisplayName: Roll channel
-  // @Description: Roll channel number.
-  // @Range: 1 8
-  // @Increment: 1
-  // @User: Advanced
-  // @RebootRequired: True
-  AP_GROUPINFO(&quot;ROLL&quot;, 0, RCMapper, _ch_roll, 1),
-  AP_GROUPINFO(&quot;PITCH&quot;, 1, RCMapper, _ch_pitch, 2),
-  AP_GROUPINFO(&quot;THROTTLE&quot;, 2, RCMapper, _ch_throttle, 3),
-  AP_GROUPINFO(&quot;YAW&quot;, 3, RCMapper, _ch_yaw, 4),
-  AP_GROUPINFO_FRAME(&quot;FORWARD&quot;, 4, RCMapper, _ch_forward, 6, AP_PARAM_FRAME_SUB),
-  AP_GROUPINFO_FRAME(&quot;LATERAL&quot;, 5, RCMapper, _ch_lateral, 7, AP_PARAM_FRAME_SUB),
-};
-</code></pre><p>最终在使用的时候：<br>1.只需要定义一个RC_Channel的指针;<br>2.然后通过RC_Channels::rc_channel()返回一个实际通道指针;<br>3.实际通道指针的映射存在于RCMapper::var_info[]；<br>关于使用上面三点了解了也就基本能使用了，接下来深入一点就是这个ＰＷＭ的值究竟是怎么来的，从RC_Channel类中不难发现：</p>
-<pre><code>void
-RC_Channel::input()
-{
-  radio_in = hal.rcin-&gt;read(ch_in);
-}
-
-uint16_t
-RC_Channel::read() const
-{
-  return hal.rcin-&gt;read(ch_in);
-}
-
-
- 上述两个方法的中调用都涉及到了hal.rcin，从RCInput可以找到相关实现，最终可以找到是通过orb_copy(ORB_ID(input_rc), _rc_sub, &amp;_rcin);来获取的到外部输入的RC 信号的；
-
-
-void PX4RCInput::_timer_tick(void)
-{
-  perf_begin(_perf_rcin);
-  bool rc_updated = false;
-  if (orb_check(_rc_sub, &amp;rc_updated) == 0 &amp;&amp; rc_updated) {
-  pthread_mutex_lock(&amp;rcin_mutex);
-  orb_copy(ORB_ID(input_rc), _rc_sub, &amp;_rcin);
-  pthread_mutex_unlock(&amp;rcin_mutex);
-  }
-  // note, we rely on the vehicle code checking new_input()
-  // and a timeout for the last valid input to handle failsafe
-  perf_end(_perf_rcin);
-}
-
-
- 通过全局搜索我们可以在PX4Firmware/src/driver/px4_fmu/fmu.cpp中找到下面的函数，传输的_rc_in则是通过void
-</code></pre><p>PX4FMU::fill_rc_in（）来进行填充的，也就是我们拿到的原始包含pwm的值；</p>
-<pre><code>void
-PX4FMU::cycle_trampoline(void *arg)
-{
-PX4FMU *dev = reinterpret_cast&lt;PX4FMU *&gt;(arg);
-
-dev-&gt;cycle();
-}
-</code></pre><p>而cycle中就有通过UORB发布input_rc的话题，同时调用了work_queue进行循环，仔细一看就会发现这个函数里面还有对安全开关的操作；</p>
-<pre><code>// slave safety from IO
-...
-..
-/* check arming state */
-...
-..
-
-if (rc_updated) {
-/* lazily advertise on first publication */
-if (_to_input_rc == nullptr) {
-     _to_input_rc = orb_advertise(ORB_ID(input_rc), &amp;_rc_in);
-
-} else {
-     orb_publish(ORB_ID(input_rc), _to_input_rc, &amp;_rc_in);
-}
-}
-</code></pre><p>work_queue(HPWORK, &amp;_work, (worker_t)&amp;PX4FMU::cycle_trampoline, this,<br>USEC2TICK(SCHEDULE_INTERVAL - main_out_latency));<br>到这里基本上能明白的是px4_fmu也是公共继承了CDev的类和之前的I2C、SPI一样都是属于字符型驱动；相同情况px4_io也是同样的是公共继承了CDev的字符类驱动；从nsh的终端上“ls dev”也可以看出，px对fmu和io的抽象，按照官网说明那样fmu和io之间是通过串口进行通信的，而在fmu的work_queue中还没有发现相关源码。这里需要在整理；</p>
-<h2 id="SRV-Channel"><a href="#SRV-Channel" class="headerlink" title="SRV_Channel"></a>SRV_Channel</h2><pre><code> SRV_Channel是对输出通道的抽象出的数据结构，枚举了所有PWM通道；实现了单个SRV_Channel的从信号的输入到输出的计算，并且附加了对通道数值的类型和限幅操作；
-
-
-/*
-  class SRV_Channel. The class SRV_Channels contains an array of
-  SRV_Channel objects. This is done to fit within the AP_Param limit
-  of 64 parameters per object.
-*/
-class SRV_Channel {
-public:
-  friend class SRV_Channels;
-  // constructor
-  SRV_Channel(void);
-
-  static const struct AP_Param::GroupInfo var_info[];
-
-  typedef enum
-  {
-  k_none = 0, ///&lt; disabled
-  k_manual = 1, ///&lt; manual, just pass-thru the RC in signal
-  k_flap = 2, ///&lt; flap
-  k_flap_auto = 3, ///&lt; flap automated
-  k_aileron = 4, ///&lt; aileron
-  k_unused1 = 5, ///&lt; unused function
-  k_mount_pan = 6, ///&lt; mount yaw (pan)
-  k_mount_tilt = 7, ///&lt; mount pitch (tilt)
-  k_mount_roll = 8, ///&lt; mount roll
-  k_mount_open = 9, ///&lt; mount open (deploy) / close (retract)
-  k_cam_trigger = 10, ///&lt; camera trigger
-  k_egg_drop = 11, ///&lt; egg drop
-  k_mount2_pan = 12, ///&lt; mount2 yaw (pan)
-  k_mount2_tilt = 13, ///&lt; mount2 pitch (tilt)
-  k_mount2_roll = 14, ///&lt; mount2 roll
-  k_mount2_open = 15, ///&lt; mount2 open (deploy) / close (retract)
-  k_dspoiler1 = 16, ///&lt; differential spoiler 1 (left wing)
-  k_dspoiler2 = 17, ///&lt; differential spoiler 2 (right wing)
-  k_aileron_with_input = 18, ///&lt; aileron, with rc input
-  k_elevator = 19, ///&lt; elevator
-  k_elevator_with_input = 20, ///&lt; elevator, with rc input
-  k_rudder = 21, ///&lt; secondary rudder channel
-  k_sprayer_pump = 22, ///&lt; crop sprayer pump channel
-  k_sprayer_spinner = 23, ///&lt; crop sprayer spinner channel
-  k_flaperon1 = 24, ///&lt; flaperon, left wing
-  k_flaperon2 = 25, ///&lt; flaperon, right wing
-  k_steering = 26, ///&lt; ground steering, used to separate from rudder
-  k_parachute_release = 27, ///&lt; parachute release
-  k_gripper = 28, ///&lt; gripper
-  k_landing_gear_control = 29, ///&lt; landing gear controller
-  k_engine_run_enable = 30, ///&lt; engine kill switch, used for gas airplanes and helicopters
-  k_heli_rsc = 31, ///&lt; helicopter RSC output
-  k_heli_tail_rsc = 32, ///&lt; helicopter tail RSC output
-  k_motor1 = 33, ///&lt; these allow remapping of copter motors
-  k_motor2 = 34,
-  k_motor3 = 35,
-  k_motor4 = 36,
-  k_motor5 = 37,
-  k_motor6 = 38,
-  k_motor7 = 39,
-  k_motor8 = 40,
-  k_motor_tilt = 41, ///&lt; tiltrotor motor tilt control
-  k_rcin1 = 51, ///&lt; these are for pass-thru from arbitrary rc inputs
-  k_rcin2 = 52,
-  k_rcin3 = 53,
-  k_rcin4 = 54,
-  k_rcin5 = 55,
-  k_rcin6 = 56,
-  k_rcin7 = 57,
-  k_rcin8 = 58,
-  k_rcin9 = 59,
-  k_rcin10 = 60,
-  k_rcin11 = 61,
-  k_rcin12 = 62,
-  k_rcin13 = 63,
-  k_rcin14 = 64,
-  k_rcin15 = 65,
-  k_rcin16 = 66,
-  k_ignition = 67,
-  k_choke = 68,
-  k_starter = 69,
-  k_throttle = 70,
-  k_tracker_yaw = 71, ///&lt; antennatracker yaw
-  k_tracker_pitch = 72, ///&lt; antennatracker pitch
-  k_throttleLeft = 73,
-  k_throttleRight = 74,
-  k_nr_aux_servo_functions ///&lt; This must be the last enum value (only add new values _before_ this one)
-  } Aux_servo_function_t;
-
-  // used to get min/max/trim limit value based on reverse
-  enum LimitValue {
-  SRV_CHANNEL_LIMIT_TRIM,
-  SRV_CHANNEL_LIMIT_MIN,
-  SRV_CHANNEL_LIMIT_MAX,
-  SRV_CHANNEL_LIMIT_ZERO_PWM
-  };
-
-  // set the output value as a pwm value 设置当前通道的待输出的PWM值
-  void set_output_pwm(uint16_t pwm);
-
-  // get the output value as a pwm value 获取当前通道输出的PWM值
-  uint16_t get_output_pwm(void) const { return output_pwm; }
-
-  // set angular range of scaled output 设置在转换为PWM信号时，最大输入角度
-  void set_angle(int16_t angle);
-
-  // set range of scaled output. Low is always zero 设置在转换为PWM信号时，最大输入范围
-  void set_range(uint16_t high);
-
-  // return true if the channel is reversed 返回通道是否反相
-  bool get_reversed(void) const {
-  return reversed?true:false;
-  }
-
-  // set MIN/MAX parameters  设置通道的PWM最大最小值
-  void set_output_min(uint16_t pwm) {
-  servo_min.set(pwm);
-  }
-  void set_output_max(uint16_t pwm) {
-  servo_max.set(pwm);
-  }
-
-  // get MIN/MAX/TRIM parameters 获取通道的PWM最大最小值
-  uint16_t get_output_min(void) const {
-  return servo_min;
-  }
-  uint16_t get_output_max(void) const {
-  return servo_max;
-  }
-  uint16_t get_trim(void) const {
-  return servo_trim;
-  }
-
-private:
-  AP_Int16 servo_min;
-  AP_Int16 servo_max;
-  AP_Int16 servo_trim;
-  // reversal, following convention that 1 means reversed, 0 means normal
-  AP_Int8 reversed;
-  AP_Int8 function;
-
-  // a pending output value as PWM
-  uint16_t output_pwm;
-
-  // true for angle output type
-  bool type_angle:1;
-
-  // set_range() or set_angle() has been called
-  bool type_setup:1;
-
-  // the hal channel number
-  uint8_t ch_num;
-
-  // high point of angle or range output
-  uint16_t high_out;
-
-  // convert a 0..range_max to a pwm 将PWM转换为范围
-  uint16_t pwm_from_range(int16_t scaled_value) const;
-
-  // convert a -angle_max..angle_max to a pwm 将PWM转换为角度
-  uint16_t pwm_from_angle(int16_t scaled_value) const;
-
-  // convert a scaled output to a pwm value 输入output_scaled[范围、角度]转换为PWM并set_output_pwm()；
-  void calc_pwm(int16_t output_scaled);
-
-  // output value based on function， 调用hal.rcout直接输出PWM
-  void output_ch(void);
-
-  // setup output type and range based on function
-  void aux_servo_function_setup(void);
-
-  // return PWM for a given limit value
-  uint16_t get_limit_pwm(LimitValue limit) const;
-
-  // get normalised output from -1 to 1
-  float get_output_norm(void);
-
-  // a bitmask type wide enough for NUM_SERVO_CHANNELS
-  typedef uint16_t servo_mask_t;
-
-  // mask of channels where we have a output_pwm value. Cleared when a
-  // scaled value is written.
-  static servo_mask_t have_pwm_mask;
-};
-</code></pre><h2 id="SRV-Channels"><a href="#SRV-Channels" class="headerlink" title="SRV_Channels"></a>SRV_Channels</h2><pre><code> 与SRV_Channel互为友元类，在成员变量上定义了SRV_Channels的类数组，方法上更对是对SRV_Channel的补充，例如设置中位、设置失控保护值....
-</code></pre><p>下面分析一个简单的例子：</p>
-<pre><code>首先指定通道function（类中枚举的值）和待写入的value，这个值会被保存在functions[function].output_scaled中；
-void SRV_Channels::set_output_scaled(SRV_Channel::Aux_servo_function_t function, int16_t value)；
- |
- V
-SCHED_TASK(set_servos, 50, 1500),//全部PWM输出这里会周期执行，里面会计算来自RC信号/其他填充的信号
- |
- V
-先调用SRV_Channels::calc_pwm();
-再执行SRV_Channels::output_ch_all();
- |
- V
-channels[i].output_ch();//最终回归到SRV_Channel 定义的channels[i]数组
- |
- V
-hal.rcout-&gt;write(ch_num, output_pwm);//调用AP_HAL执行输出；
-/// map a function to a servo channel and output it
-void SRV_Channel::output_ch(void)
-{
-  int8_t passthrough_from = -1;
-
-  // take care of special function cases，根据通道的编号进行不同处理，1,[51,66]k_rcin1~k_rcin16均为直通信号
-  switch(function)
-  {
-  case k_manual: // manual
-    passthrough_from = ch_num;
-  break;
-  case k_rcin1 ... k_rcin16: // rc pass-thru，转换后的通道编号为0~15
-    passthrough_from = int8_t(function - k_rcin1);
-  break;
-  case k_motor1 ... k_motor8:
-    // handled by AP_Motors::rc_write()
-  return;
-  }
-  if (passthrough_from != -1) {
-  // we are doing passthrough from input to output for this channel
-  RC_Channel *rc = RC_Channels::rc_channel(passthrough_from);
-  if (rc) {
-  if (SRV_Channels::passthrough_disabled()) {
-       output_pwm = rc-&gt;get_radio_trim();
-  } else {
-       output_pwm = rc-&gt;get_radio_in();
-  }
-  }
-  }
-  hal.rcout-&gt;write(ch_num, output_pwm);//直接通过抽象层输出，这里继续往下就要看回AP_HAL_PX下的RCOutput.cpp
-}
-</code></pre><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>RC_Channel、RC_Channels、SRV_Channel、SRV_Channels这4个类都是基于hal.rcin和hal.rcout与硬件沟通的；</p>
-
-      
-
-      
-        <div class="page-reward">
-          <a href="javascript:;" class="page-reward-btn tooltip-top">
-            <div class="tooltip tooltip-east">
-            <span class="tooltip-item">
-              赏
-            </span>
-            <span class="tooltip-content">
-              <span class="tooltip-text">
-                <span class="tooltip-inner">
-                  <p class="reward-p"><i class="icon icon-quo-left"></i>谢谢你请我吃糖果<i class="icon icon-quo-right"></i></p>
-                  <div class="reward-box">
-                    
-                    
-                    <div class="reward-box-item">
-                      <img class="reward-img" src="/assets/wechatpay.jpg">
-                      <span class="reward-type">微信</span>
-                    </div>
-                    
-                  </div>
-                </span>
-              </span>
-            </span>
-          </div>
-          </a>
-        </div>
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
+        <div class="article-info info-on-right">
+          
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">APM</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">成为一名飞控工程师</a>
         		</li>
       		
 		</ul>
 	</div>
 
-      
+          
 
-      
-
-      
-        
-<div class="share-btn share-icons tooltip-left">
-  <div class="tooltip tooltip-east">
-    <span class="tooltip-item">
-      <a href="javascript:;" class="share-sns share-outer">
-        <i class="icon icon-share"></i>
-      </a>
-    </span>
-    <span class="tooltip-content">
-      <div class="share-wrap">
-        <div class="share-icons">
-          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
-            <i class="icon icon-weibo"></i>
-          </a>
-          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
-            <i class="icon icon-weixin"></i>
-          </a>
-          <a class="qq share-sns" href="javascript:;" data-type="qq">
-            <i class="icon icon-qq"></i>
-          </a>
-          <a class="douban share-sns" href="javascript:;" data-type="douban">
-            <i class="icon icon-douban"></i>
-          </a>
-          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
-            <i class="icon icon-qzone"></i>
-          </a>
-          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
-            <i class="icon icon-facebook"></i>
-          </a>
-          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
-            <i class="icon icon-twitter"></i>
-          </a>
-          <a class="google share-sns" href="javascript:;" data-type="google">
-            <i class="icon icon-google"></i>
-          </a>
         </div>
-      </div>
-    </span>
-  </div>
-</div>
-
-<div class="page-modal wx-share js-wx-box">
-    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
-    <p>扫一扫，分享到微信</p>
-    <div class="wx-qrcode">
-      <img src="//api.qrserver.com/v1/create-qr-code/?size=150x150&data=sundexin111.github.io2020/05/22/Channel%E8%A7%A3%E8%AF%BB/" alt="微信分享二维码">
-    </div>
-</div>
-
-<div class="mask js-mask"></div>
-      
-      <div class="clearfix"></div>
-    </div>
+        <div class="clearfix"></div>
+    </header>
   </div>
 </article>
-
-  
-<nav id="article-nav">
-  
-    <a href="/2020/05/22/APM%E5%BC%80%E5%8F%91%E8%80%85%E6%89%8B%E5%86%8C/" id="article-nav-newer" class="article-nav-link-wrap">
-      <i class="icon-circle-left"></i>
-      <div class="article-nav-title">
-        
-          APM开发者手册
-        
-      </div>
-    </a>
   
   
-    <a href="/2020/05/13/Ardupilot%E9%81%A5%E6%8E%A7%E5%99%A8%E8%BE%93%E5%85%A5%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/" id="article-nav-older" class="article-nav-link-wrap">
-      <div class="article-nav-title">Ardupilot遥控器输入数据分析</div>
-      <i class="icon-circle-right"></i>
-    </a>
-  
-</nav>
-
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-        <div class="toc-container tooltip-left">
-            <i class="icon-font icon-category"></i>
-            <div class="tooltip tooltip-east">
-                <span class="tooltip-item">
-                </span>
-                <span class="tooltip-content">
-                    <div class="toc-article">
-                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#数据结构"><span class="toc-number">1.</span> <span class="toc-text">数据结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RC-Channels"><span class="toc-number">2.</span> <span class="toc-text">RC_Channels</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RC-Channel"><span class="toc-number">3.</span> <span class="toc-text">RC_Channel</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RCMapper"><span class="toc-number">4.</span> <span class="toc-text">RCMapper</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SRV-Channel"><span class="toc-number">5.</span> <span class="toc-text">SRV_Channel</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SRV-Channels"><span class="toc-number">6.</span> <span class="toc-text">SRV_Channels</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结"><span class="toc-number">7.</span> <span class="toc-text">总结</span></a></li></ol>
-                    </div>
-                </span>
-            </div>
-        </div>
-        
-    </div>
-</aside>
-
-
-
-  
-  
+    </div></section>
   
 
-  
-
-  
-
-  
+    
 
 
           </div>
@@ -954,8 +275,8 @@ void SRV_Channel::output_ch(void)
 	var yiliaConfig = {
 		mathjax: true,
 		isHome: false,
-		isPost: true,
-		isArchive: false,
+		isPost: false,
+		isArchive: true,
 		isTag: false,
 		isCategory: false,
 		open_in_new: false,
