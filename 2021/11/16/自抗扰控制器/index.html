@@ -6,17 +6,21 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>quadplane代码分析 | Hexo</title>
+  <title>自抗扰控制器 | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="article">
-<meta property="og:title" content="quadplane代码分析">
-<meta property="og:url" content="http://yoursite.com/2020/04/29/quadplane%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90/index.html">
+  <meta name="description" content="自抗扰控制器(ADRC)ADRC主要包括三个部分： -1 跟踪微分器 -2 非线性状态反馈(非线性组合) -3 扩张观测器 所以adrc控制器的结构图如下：  自抗扰控制器的特点：继承了经典PID控制器的精华，对被控对象的数学模型几乎没有任何要求，又在其基础上引入了基于现代控制理论的状态观测器技术，将抗干扰技术融入到了传统的PID控制中，最终设计出了适合在工程实践中广泛应用的全新控制器。 跟踪微分">
+<meta property="og:type" content="article">
+<meta property="og:title" content="自抗扰控制器">
+<meta property="og:url" content="http://yoursite.com/2021/11/16/%E8%87%AA%E6%8A%97%E6%89%B0%E6%8E%A7%E5%88%B6%E5%99%A8/index.html">
 <meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="自抗扰控制器(ADRC)ADRC主要包括三个部分： -1 跟踪微分器 -2 非线性状态反馈(非线性组合) -3 扩张观测器 所以adrc控制器的结构图如下：  自抗扰控制器的特点：继承了经典PID控制器的精华，对被控对象的数学模型几乎没有任何要求，又在其基础上引入了基于现代控制理论的状态观测器技术，将抗干扰技术融入到了传统的PID控制中，最终设计出了适合在工程实践中广泛应用的全新控制器。 跟踪微分">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2020-04-29T11:54:56.000Z">
-<meta property="article:modified_time" content="2020-04-29T11:54:56.322Z">
+<meta property="og:image" content="https://i.loli.net/2021/11/16/ycYpUxLODz4FdHr.png">
+<meta property="article:published_time" content="2021-11-16T08:36:37.000Z">
+<meta property="article:modified_time" content="2021-11-17T14:55:16.255Z">
 <meta property="article:author" content="若枫">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://i.loli.net/2021/11/16/ycYpUxLODz4FdHr.png">
   
     <link rel="alternative" href="/atom.xml" title="Hexo" type="application/atom+xml">
   
@@ -193,27 +197,50 @@
           </div>
           <div id="js-content" class="content-ll">
             
-<article id="post-quadplane代码分析" class="article article-type-post " itemscope itemprop="blogPost">
+<article id="post-自抗扰控制器" class="article article-type-post " itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
         
   
     <h1 class="article-title" itemprop="name">
-      quadplane代码分析
+      自抗扰控制器
     </h1>
   
 
         
-        <a href="/2020/04/29/quadplane%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90/" class="archive-article-date">
-  	<time datetime="2020-04-29T11:54:56.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-29</time>
+        <a href="/2021/11/16/%E8%87%AA%E6%8A%97%E6%89%B0%E6%8E%A7%E5%88%B6%E5%99%A8/" class="archive-article-date">
+  	<time datetime="2021-11-16T08:36:37.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-11-16</time>
 </a>
         
       </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        
+        <h1 id="自抗扰控制器-ADRC"><a href="#自抗扰控制器-ADRC" class="headerlink" title="自抗扰控制器(ADRC)"></a>自抗扰控制器(ADRC)</h1><p>ADRC主要包括三个部分：</p>
+<p>-1 跟踪微分器</p>
+<p>-2 非线性状态反馈(非线性组合)</p>
+<p>-3 扩张观测器</p>
+<p>所以adrc控制器的结构图如下：</p>
+<p><img src="https://i.loli.net/2021/11/16/ycYpUxLODz4FdHr.png" alt="adrc.png"></p>
+<p>自抗扰控制器的特点：<br>继承了经典PID控制器的精华，<strong>对被控对象的数学模型几乎没有任何要求</strong>，又在其基础上引入了基于现代控制理论的<strong>状态观测器</strong>技术，将抗干扰技术融入到了传统的PID控制中，最终设计出了适合在工程实践中广泛应用的全新控制器。</p>
+<h2 id="跟踪微分器-TD"><a href="#跟踪微分器-TD" class="headerlink" title="跟踪微分器(TD)"></a>跟踪微分器(TD)</h2><p>这是一个单输入双输出的模块，主要作用有两个：</p>
+<ul>
+<li><p>避免输入量不要用跳变，便于实际系统的实时跟踪，传统PID有个问题，就是跟踪像阶跃信号这种突变信号时超调和上升时间共存的现象，所以我们的思路就是对输入信号进行平滑处理，避免发生突变。</p>
+</li>
+<li><p>过滤高频噪声</p>
+</li>
+</ul>
+<p>非线性微分跟踪器数学描述：</p>
+<script type="math/tex; mode=display">\begin{cases} y_1(k+1)=y_1(k)+hy_2(k)\\
+ y_2(k+1)=y_2(k)+hfst(y_1(k)-x(k),y_2(k),\delta,h)\end{cases}</script><p>式中，h为采样周期，x(k)为第K时刻的输入信号；$\delta$为决定跟踪快慢的参数，$fst(.)$函数为最速控制综合函数，描述如下：</p>
+<script type="math/tex; mode=display">fst(x_1,x_2,\delta,h)=\begin{cases}-\delta sgn(a) \quad \vert a \vert>d\\
+-\delta \frac{a}{d} \quad \vert a \vert \leq d
+\end{cases}</script><script type="math/tex; mode=display">a=\begin{cases}x_2+\frac{a_0-d}{2} sgn(y) \quad \vert y \vert>d_0\\
+x_2+\frac{y}{h} \quad \vert y \vert \leq d_0
+\end{cases}</script><p>式中，$d=\delta h$;$d_0=hd$;$y=x_1+hx_2$;$a_0=\sqrt{d^2+8\delta \vert y \vert}$</p>
+<p>输入信号时$v(k)$(带噪声)，微分器同时可以实现滤波。</p>
+
       
 
       
@@ -297,7 +324,7 @@
     <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
     <p>扫一扫，分享到微信</p>
     <div class="wx-qrcode">
-      <img src="//api.qrserver.com/v1/create-qr-code/?size=150x150&data=sundexin111.github.io2020/04/29/quadplane%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90/" alt="微信分享二维码">
+      <img src="//api.qrserver.com/v1/create-qr-code/?size=150x150&data=sundexin111.github.io2021/11/16/%E8%87%AA%E6%8A%97%E6%89%B0%E6%8E%A7%E5%88%B6%E5%99%A8/" alt="微信分享二维码">
     </div>
 </div>
 
@@ -311,18 +338,9 @@
   
 <nav id="article-nav">
   
-    <a href="/2020/04/29/%E5%80%BE%E8%BD%AC%E5%88%86%E7%A6%BB/" id="article-nav-newer" class="article-nav-link-wrap">
-      <i class="icon-circle-left"></i>
-      <div class="article-nav-title">
-        
-          倾转分离
-        
-      </div>
-    </a>
   
-  
-    <a href="/2020/04/28/quadplane%E9%A3%9E%E8%A1%8C%E6%A8%A1%E5%BC%8F/" id="article-nav-older" class="article-nav-link-wrap">
-      <div class="article-nav-title">quadplane飞行模式</div>
+    <a href="/2021/11/16/%E6%8E%A7%E5%88%B6%E7%90%86%E8%AE%BA%E7%AE%80%E4%BB%8B/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">控制理论简介</div>
       <i class="icon-circle-right"></i>
     </a>
   
@@ -349,7 +367,7 @@
                 </span>
                 <span class="tooltip-content">
                     <div class="toc-article">
-                    目录，不存在的…
+                    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#自抗扰控制器-ADRC"><span class="toc-number">1.</span> <span class="toc-text">自抗扰控制器(ADRC)</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#跟踪微分器-TD"><span class="toc-number">1.1.</span> <span class="toc-text">跟踪微分器(TD)</span></a></li></ol></li></ol>
                     </div>
                 </span>
             </div>

@@ -192,6 +192,321 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-APM源码解读（一）" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/04/30/APM%E6%BA%90%E7%A0%81%E8%A7%A3%E8%AF%BB%EF%BC%88%E4%B8%80%EF%BC%89/">APM源码解读（一）</a>
+    </h1>
+  
+
+        
+        <a href="/2020/04/30/APM%E6%BA%90%E7%A0%81%E8%A7%A3%E8%AF%BB%EF%BC%88%E4%B8%80%EF%BC%89/" class="archive-article-date">
+  	<time datetime="2020-04-30T05:26:32.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-30</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="1-AC-PosControl-accel-to-lean-angles"><a href="#1-AC-PosControl-accel-to-lean-angles" class="headerlink" title="1 AC_PosControl::accel_to_lean_angles"></a>1 AC_PosControl::accel_to_lean_angles</h1><hr>
+<p>位置：libraries\AC_AttitudeControl\AC_PosControl.cpp<br>用途：将NED坐标系下的期望加速度转换成机体坐标系下的倾斜角度(pitch,roll)<br>源程序：</p>
+<pre><code>void AC_PosControl::accel_to_lean_angles(float accel_x_cmss, float accel_y_cmss, float&amp; roll_target, float&amp; pitch_target) const
+{
+    float accel_right, accel_forward;
+
+    // rotate accelerations into body forward-right frame
+    accel_forward = accel_x_cmss*_ahrs.cos_yaw() + accel_y_cmss*_ahrs.sin_yaw();
+    accel_right = -accel_x_cmss*_ahrs.sin_yaw() + accel_y_cmss*_ahrs.cos_yaw();
+
+    // update angle targets that will be passed to stabilize controller
+    pitch_target = atanf(-accel_forward/(GRAVITY_MSS * 100.0f))*(18000.0f/M_PI);
+    float cos_pitch_target = cosf(pitch_target*M_PI/18000.0f);
+    roll_target = atanf(accel_right*cos_pitch_target/(GRAVITY_MSS * 100.0f))*(18000.0f/M_PI);
+}
+</code></pre><p>数学推导：<br>假设飞行器z轴受力平衡，即在z轴上保持静止。<br>已知NED坐标系下期望加速度accel_x_cmss，accel_y_cmss(融合之后的加速度数据为NED坐标系下)和遥控输入的yaw，求机体坐标系下pitch角和roll角。<br>1.需要先将yaw角进行补偿，即只剩下倾斜角。<br>将NED坐标系下的水平加速度做绕z旋转，得到没有旋转只有倾斜的中间状态,该状态下的x轴方向加速度为accel_forward，y轴加速度为accel_righ。<br>NED坐标系转机体坐标系绕z轴旋转矩阵为：  </p>
+<p><img src="https://pic3.zhimg.com/v2-f08f4e899a2802c9a750272c4128a606_b.jpg" alt=""></p>
+<p><img src="https://pic3.zhimg.com/80/v2-f08f4e899a2802c9a750272c4128a606_720w.jpg" alt=""></p>
+<p>2.通过accel_forward，accel_righ，计算pitch，roll。<br>应为飞机在z轴上受力平衡，所以机体坐标系下飞机受到的合外力将在z轴方向上产生一个-G的力才能使飞机在z轴受力平衡。<br>如图</p>
+<p><img src="https://pic1.zhimg.com/v2-58f5b203c07b3c0400a2bb4486153930_b.jpg" alt=""></p>
+<p><img src="https://pic1.zhimg.com/80/v2-58f5b203c07b3c0400a2bb4486153930_720w.jpg" alt=""></p>
+<p>即支持飞机在NED坐标系z轴保持静止需要-G，而且需要x轴上产生accel_forward，y轴上产生accel_righ，这些都是由机体坐标系下的合外力-F提供的。</p>
+<p>所以有：</p>
+<p><img src="https://pic4.zhimg.com/v2-42591d1b924f3494a89576c2336e3927_b.jpg" alt=""></p>
+<p><img src="https://pic4.zhimg.com/80/v2-42591d1b924f3494a89576c2336e3927_720w.jpg" alt=""></p>
+<p>其中</p>
+<p><img src="https://pic3.zhimg.com/v2-0eb01385fcc650bf3acf19c2384889b2_b.jpg" alt=""></p>
+<p>$R_B^N$是机体坐标系转到NED坐标系的旋转矩阵(之前已经进行过yaw方向的旋转了所以这个矩阵里的yaw为0)。</p>
+<p><img src="https://pic1.zhimg.com/v2-568a76a8cc99a7195ea4133dd9b56734_b.jpg" alt=""></p>
+<p><img src="https://pic1.zhimg.com/80/v2-568a76a8cc99a7195ea4133dd9b56734_720w.jpg" alt=""></p>
+<p>可得：</p>
+<p><img src="https://pic4.zhimg.com/v2-1d656ee7378f80df9d1129f559ced537_b.jpg" alt=""></p>
+<p><img src="https://pic4.zhimg.com/80/v2-1d656ee7378f80df9d1129f559ced537_720w.jpg" alt=""></p>
+<p>所以有：</p>
+<p><img src="https://pic3.zhimg.com/v2-582783e489702eb874e5e7033f24660e_b.jpg" alt=""></p>
+<p><img src="https://pic3.zhimg.com/80/v2-582783e489702eb874e5e7033f24660e_720w.jpg" alt=""></p>
+<p>所以：</p>
+<p><img src="https://pic1.zhimg.com/v2-c892064cbc88514ff4fec063c9599398_b.jpg" alt=""></p>
+<p><img src="https://pic1.zhimg.com/80/v2-c892064cbc88514ff4fec063c9599398_720w.jpg" alt=""></p>
+<p><img src="https://pic2.zhimg.com/v2-598b043d6162fb6b7bfefb2e840ececd_b.jpg" alt=""></p>
+<p><img src="https://pic2.zhimg.com/80/v2-598b043d6162fb6b7bfefb2e840ececd_720w.jpg" alt=""></p>
+<h1 id="2-函数名：void-Quaternion-to-axis-angle"><a href="#2-函数名：void-Quaternion-to-axis-angle" class="headerlink" title="2 函数名：void Quaternion::to_axis_angle"></a>2 函数名：void Quaternion::to_axis_angle</h1><hr>
+<p>位置：libraries\AP_Math\quaternion.cpp<br>功能：将四元数转换成轴角形式<br>原函数：</p>
+<pre><code>void Quaternion::to_axis_angle(Vector3f &amp;v)
+{
+    float l = sqrtf(sq(q2)+sq(q3)+sq(q4));
+    v = Vector3f(q2,q3,q4);
+    if (!is_zero(l)) {
+        v /= l;
+        v *= wrap_PI(2.0f * atan2f(l,q1));
+    }
+}
+</code></pre><p>单位四元素可以表示为：  </p>
+<p><img src="https://pic2.zhimg.com/v2-d4370d03efc8d6a31f73563cd16a0df1_b.jpg" alt=""></p>
+<p><img src="https://pic2.zhimg.com/80/v2-d4370d03efc8d6a31f73563cd16a0df1_720w.jpg" alt=""></p>
+<p>单位四元数有：  </p>
+<p><img src="https://pic1.zhimg.com/v2-5ab71fd0084665242c112caf074adaa4_b.jpg" alt=""></p>
+<p><img src="https://pic1.zhimg.com/80/v2-5ab71fd0084665242c112caf074adaa4_720w.jpg" alt=""></p>
+<p>又因为：  </p>
+<p><img src="https://pic1.zhimg.com/v2-3a4d891fed98d06ca87f0301b60b1cf8_b.jpg" alt=""></p>
+<p><img src="https://pic1.zhimg.com/80/v2-3a4d891fed98d06ca87f0301b60b1cf8_720w.jpg" alt=""></p>
+<p>可以得到：  </p>
+<p><img src="https://pic1.zhimg.com/v2-43da3412fe18a02c37270e8263bed04c_b.jpg" alt=""></p>
+<p><img src="https://pic1.zhimg.com/80/v2-43da3412fe18a02c37270e8263bed04c_720w.jpg" alt=""></p>
+<p>所以：  </p>
+<p><img src="https://pic2.zhimg.com/v2-ad253d2f465e58887899a9b2103761e1_b.jpg" alt=""></p>
+<p><img src="https://pic2.zhimg.com/80/v2-ad253d2f465e58887899a9b2103761e1_720w.jpg" alt=""></p>
+<p>但是函数里的四元素不是单位四元素所以要进行单位化  </p>
+<p><img src="https://pic1.zhimg.com/v2-534732d4e186568f75f4b01fc65b12f0_b.jpg" alt=""></p>
+<p><img src="https://pic1.zhimg.com/80/v2-534732d4e186568f75f4b01fc65b12f0_720w.jpg" alt=""></p>
+<p>令:  </p>
+<p><img src="https://pic2.zhimg.com/v2-6b0f8dc619c8f506f6ed599aa8353831_b.jpg" alt=""></p>
+<p><img src="https://pic2.zhimg.com/80/v2-6b0f8dc619c8f506f6ed599aa8353831_720w.jpg" alt=""></p>
+<p>所以：  </p>
+<p><img src="https://pic2.zhimg.com/v2-a144a55613ef9b7175c2f273842e3115_b.jpg" alt=""></p>
+<p><img src="https://pic2.zhimg.com/80/v2-a144a55613ef9b7175c2f273842e3115_720w.jpg" alt=""></p>
+<h1 id="3-函数名：sqrt-controller-开方控制器"><a href="#3-函数名：sqrt-controller-开方控制器" class="headerlink" title="3 函数名：sqrt_controller(开方控制器)"></a>3 函数名：sqrt_controller(开方控制器)</h1><p>位置：libraries\AC_AttitudeControl\AC_AttitudeControl.cpp(1047行)<br>用途：经过改良的kp控制，当kp过大时，会呈现根号曲线，使响应变软</p>
+<pre><code>_vel_target.z = AC_AttitudeControl::sqrt_controller(_pos_error.z, _p_pos_z.kP(), _accel_z_cms, _dt);
+</code></pre><p>原函数</p>
+<pre><code>float AC_AttitudeControl::sqrt_controller(float error, float p, float second_ord_lim, float dt)
+{                                       
+    float correction_rate; 
+    if (is_negative(second_ord_lim) || is_zero(second_ord_lim)) {
+        //二阶限制为零或负数 在这为 _accel_z_cms
+        correction_rate = error*p;  
+    } else if (is_zero(p)) {
+        //p为0 在这_p_pos_z.kP()=1
+        if (is_positive(error)) {
+            correction_rate = safe_sqrt(2.0f*second_ord_lim*(error));
+        } else if (is_negative(error)) {
+            correction_rate = -safe_sqrt(2.0f*second_ord_lim*(-error));
+        } else {
+            correction_rate = 0.0f;
+        }
+    } else {//zing-note:正常进这个函数
+        float linear_dist = second_ord_lim/sq(p);
+        if (error &gt; linear_dist) {//误差非常大
+            correction_rate = safe_sqrt(2.0f*second_ord_lim*(error-(linear_dist/2.0f)));
+        } else if (error &lt; -linear_dist) {//误差非常小
+            correction_rate = -safe_sqrt(2.0f*second_ord_lim*(-error-(linear_dist/2.0f)));
+        } else {//正常状态
+            correction_rate = error*p;
+        }
+    }
+    if (!is_zero(dt)) {
+        return constrain_float(correction_rate, -fabsf(error)/dt, fabsf(error)/dt);
+    } else {
+        return correction_rate;
+    }
+}
+</code></pre><p>可以看出这个函数是在KP控制上加了一些限制，如果超过限制就做一些处理，如果没有超过限制，这个控制的效果就是普通的KP，<br>_vel_target.z=_pos_error.z*_p_pos_z.kP()<br>在物理上可以理解为这个KP=1/dt，所以这个算法可以认为是位置误差微分得到速度，这个思路在APM中被广泛应用。</p>
+<p>那么经过限制后会有一个什么效果呢？最直观的方式就是把函数图像画出来，假设误差是从[-10,10]匀速变化，经过这个控制器在不同p值下的输出曲线。  </p>
+<p><img src="https://pic1.zhimg.com/v2-1f838e34e7a5a536587cc0b0c6c8edb0_b.jpg" alt=""></p>
+<p><img src="https://pic1.zhimg.com/80/v2-1f838e34e7a5a536587cc0b0c6c8edb0_720w.jpg" alt=""></p>
+<p>可以很明显的看出，在没有达到限制时，输出曲线斜率随着p值增大而变大，慢慢的限制要求达到，曲线慢慢逼近一条曲线，p越大输出越接近这条曲线，这条曲线类似于根号函数的曲线，所以这个函数取名为开方控制器。</p>
+<p>这个控制器被广泛应用在APM的控制过程中，甚至是用在处理遥控器的输入信号，来控制遥控器的软硬程度，<strong>看的代码多了就发现，大家思路都差不多，区别就是这些不起眼的限制条件，先学习框架在学习细节，比如这个误差乘kp得到微分的思路你学会了吗？</strong></p>
+<h1 id="4-函数名：lean-angles-to-accel"><a href="#4-函数名：lean-angles-to-accel" class="headerlink" title="4 函数名：lean_angles_to_accel"></a>4 函数名：lean_angles_to_accel</h1><p>位置：libraries\AC_AttitudeControl\AC_PosControl.cpp<br>用途：倾斜角转加速度<br>原函数：</p>
+<pre><code>void AC_PosControl::lean_angles_to_accel(float&amp; accel_x_cmss, float&amp; accel_y_cmss) const
+{    
+    accel_x_cmss = (GRAVITY_MSS * 100) * (-_ahrs.cos_yaw() * _ahrs.sin_pitch() * _ahrs.cos_roll() - _ahrs.sin_yaw() * _ahrs.sin_roll()) / MAX(_ahrs.cos_roll()*_ahrs.cos_pitch(), 0.5f);
+    accel_y_cmss = (GRAVITY_MSS * 100) * (-_ahrs.sin_yaw() * _ahrs.sin_pitch() * _ahrs.cos_roll() + _ahrs.cos_yaw() * _ahrs.sin_roll()) / MAX(_ahrs.cos_roll()*_ahrs.cos_pitch(), 0.5f);
+}
+</code></pre><p>上次讲了加速度转倾斜角，不知道有没有人去思考倾斜角转加速度呢？<br>我们已知倾斜角，也就是已知旋转矩阵，使用该旋转矩阵，将机体坐标系下的加速度转换到地理坐标系下即可。<br>倾斜角转加速度的思路是一样的，假设当前飞机只受重力和旋翼产生的支持力，保持z轴平衡状态。<br>所以有：  </p>
+<p><img src="https://pic2.zhimg.com/v2-9515be91617976a00fcf3438f86b6dd5_b.jpg" alt=""></p>
+<p><img src="https://pic2.zhimg.com/80/v2-9515be91617976a00fcf3438f86b6dd5_720w.jpg" alt=""></p>
+<p>其中</p>
+<p><img src="https://pic3.zhimg.com/v2-ae382104b39449d111559ea0d03a2076_b.jpg" alt=""></p>
+<p><img src="https://pic3.zhimg.com/80/v2-ae382104b39449d111559ea0d03a2076_720w.jpg" alt=""></p>
+<p>是机体坐标系转NED坐标系的旋转矩阵。<br>可得：  </p>
+<p><img src="https://pic1.zhimg.com/v2-6988120891b1deb8d8d8598a2a80c7f4_b.jpg" alt=""></p>
+<p><img src="https://pic1.zhimg.com/80/v2-6988120891b1deb8d8d8598a2a80c7f4_720w.jpg" alt=""></p>
+<p>所以有：  </p>
+<p><img src="https://pic1.zhimg.com/v2-a543beaf69270a58895fe3e64c4101a0_b.jpg" alt=""></p>
+<p><img src="https://pic1.zhimg.com/80/v2-a543beaf69270a58895fe3e64c4101a0_720w.jpg" alt=""></p>
+<p>因为</p>
+<p><img src="https://pic2.zhimg.com/v2-8bcd51dcaf66d2a26819c0b3dde30629_b.jpg" alt=""></p>
+<p><img src="https://pic2.zhimg.com/80/v2-8bcd51dcaf66d2a26819c0b3dde30629_720w.jpg" alt=""></p>
+<p>产生在NED坐标系下的加速度有：  </p>
+<p><img src="https://pic1.zhimg.com/v2-eb2b55a3610d2e4052f809d93e74a464_b.jpg" alt=""></p>
+<p><img src="https://pic1.zhimg.com/80/v2-eb2b55a3610d2e4052f809d93e74a464_720w.jpg" alt=""></p>
+<p>所以：  </p>
+<p><img src="https://pic4.zhimg.com/v2-5b4e005792f8d513ff142b488430e85f_b.jpg" alt=""></p>
+<p><img src="https://pic4.zhimg.com/80/v2-5b4e005792f8d513ff142b488430e85f_720w.jpg" alt=""></p>
+<p>至于最后为什么有个MAX，作者是这样说的</p>
+<blockquote>
+<p>3 is dependent on there being a large lean angle and angle boost running. If we are in ACRO and at a large lean angle then you are probably holding altitude and the Fbz is probably closer to -mg/(cos_theta * cos_rho). Using the result of 3 will also have the effect of the aircraft going through the unconstrained acceleration part of the Fbz curve on it’s way to the low angle causing a large acceleration as it levels. So 3 is not a good option in general.<br>1 and 2 are reasonable and both will result in a good starting point. 2 will result in a twitch as you say but due to the acceleration limiting in most navigation modes 1 will to. In any case we have to limit the angle to something to prevent the cos terms going to zero so we need some version of 2.<br>For now I will leave it using the 2 version until we update the output of the navigation to a full 3D acceleration controller.  </p>
+</blockquote>
+<p>其实这个限制有三种情况，最终选择了第二种限制方法得到了现在的函数。<br>这个函数的讨论的全过程在<br><a href="https://link.zhihu.com/?target=https%3A//github.com/ArduPilot/ardupilot/issues/7267">https://github.com/ArduPilot/ardupilot/issues/7267</a><br>可以看看这个最终函数是如何修改得到的。</p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">APM</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2020/04/30/APM%E6%BA%90%E7%A0%81%E8%A7%A3%E8%AF%BB%EF%BC%88%E4%B8%80%EF%BC%89/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-倾转分离" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/04/29/%E5%80%BE%E8%BD%AC%E5%88%86%E7%A6%BB/">倾转分离</a>
+    </h1>
+  
+
+        
+        <a href="/2020/04/29/%E5%80%BE%E8%BD%AC%E5%88%86%E7%A6%BB/" class="archive-article-date">
+  	<time datetime="2020-04-29T13:51:41.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-29</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="1-倾转扭矩分离设计"><a href="#1-倾转扭矩分离设计" class="headerlink" title="1 倾转扭矩分离设计"></a>1 倾转扭矩分离设计</h1><p>在四旋翼的工程应用中，roll和pitch是靠螺旋桨直接产生的力矩改变，响应较快。yaw是靠螺旋桨差速产生的旋转力矩改变，响应较慢。旋翼稳定飞行的首要任务是维持由滚转和俯仰运动决定的桨平面稳定，这需要更为精确的控制，也需要更多的能量分配来实现稳定，从而保证滚转-俯仰运动所决定的桨平面没有误差，相较而言，偏航运动的误差在一定范围是可以接受的，并且由扭矩对偏航角的调整缓慢，产生的误差较大，会占用大部分姿态控制的能量，反过来对整个姿态控制产生负面的影响。因此将由滚转-俯仰的控制优先级提前，先满足主要的桨平面稳定，即Z轴对齐，再进行偏航运动的控制，倾转分离过程如图所示。<br><img src="https://i.loli.net/2020/04/29/FVpkoJNC6arDe8g.jpg" alt="倾转扭矩分离.jpg"><br>将当前姿态向目标姿态的整个旋转过程分为两个部分，第一部分是先进行俯仰和滚转运动组合的旋转，然后再进行偏航运动的旋转，即当前状态-&gt;中间状态-&gt;目标状态。图中蓝色实线的坐标系是当前状态，进行了俯仰和滚转运动组合的旋转后，红色实线的坐标系为对齐了Z轴的中间状态，Z轴已没有误差的与目标旋转的Z轴所对齐，蓝色虚线代表初始状态，最后是进行偏航运动的旋转，目标姿态由黑色实线表示。</p>
+<h1 id="2-倾转扭矩分离算法步骤"><a href="#2-倾转扭矩分离算法步骤" class="headerlink" title="2 倾转扭矩分离算法步骤"></a>2 倾转扭矩分离算法步骤</h1><p>对四旋翼姿态控制进行倾转分离可分成如下步骤进行：</p>
+<ul>
+<li>1 将目标姿态与当前姿态从NED坐标系转到机体坐标系，提取出Z轴，通过在机体坐标系下对齐目标姿态和当前姿态的Z轴得到倾斜误差；</li>
+<li>2 通过四元数转换的旋转矩阵计算轴角，并将计算得到的倾斜误差转化成四元数，记倾斜误差为$Q_{E1}$；</li>
+<li>3 用总的旋转误差减去倾斜误差，从而得到尚未对齐的扭矩误差$Q<em>{E2}$ ，对扭矩误差进行处理后得到新的扭矩误差$Q </em>{E2d}$ ；</li>
+<li>4 将处理过的倾斜误差和扭矩误差合成为新的总误差，以轴角的形式传递给下一级控制器。</li>
+</ul>
+<p><img src="https://i.loli.net/2020/04/30/KSU8cy1dkC9uNzn.png" alt="倾转扭矩分离步骤.png"></p>
+<p>记倾转分离算法使用规范化四元数$Q$的矩阵形式为$Q=\begin{bmatrix}q_0\q_1\q_2\q_3\end{bmatrix}$ ,则当前状态的四元数为$Q_0$ ，目标状态的四元数为$Q_1$ 。<br>对于步骤一，使用四元数转化为旋转矩阵。</p>
+<script type="math/tex; mode=display">C_b^R=\begin{bmatrix}1-2q_2^2-2q_3^2&2q_1q_2-2q_3q_0&2q_1q_3+2q_2q_0\\2a_1q_2+2q_3q_0&1-2q_1^2-2q_3^2&2q_2q_3-2q_1q_0\\2q_1q_3-2q_2q_0&2q_2q_3+2q_1q_0&1-2q_1^2-2q_2^2\end{bmatrix}</script><p>左乘旋转矩阵$C<em>b^R$，，完成NED坐标系向体坐标系的转换，目标姿态的旋转矩阵为$C</em>{b1}^R$，从目标姿态提取出Z轴记为$a_1$：</p>
+<script type="math/tex; mode=display">a_1=C_{b1}^R\begin{bmatrix}0\\0\\1\end{bmatrix}</script><p>当前姿态的旋转矩阵为$C_{b2}^R$，从当前姿态提取出Z轴记为$a_0$：</p>
+<script type="math/tex; mode=display">a_0=C_{b1}^R\begin{bmatrix}0\\0\\1\end{bmatrix}</script><p>使用轴角描述的旋转需要旋转矢量轴$u_A$以及旋转角度$\theta$，其中$u_A=\begin{bmatrix}l\m\n\end{bmatrix}$ 。<br>从当前姿态到目标姿态的旋转矢量轴$u_1^A$:</p>
+<script type="math/tex; mode=display">u_1^A=a_0\times a_1</script><p>从当前姿态到目标姿态的旋转角度$\theta$$</p>
+<script type="math/tex; mode=display">\theta=arccoc(a_0.a_1)</script><p>则轴角$V_1$可以表示为：</p>
+<script type="math/tex; mode=display">V_1=u_1^A.\theta=\begin{bmatrix}l.\theta\\m.\theta\\n.\theta\end{bmatrix}</script><p>对于步骤二：将轴角$V_1$转化为四元数$Q_z$。</p>
+<script type="math/tex; mode=display">\begin{cases}q_0=cos{\frac{\theta}{2}}\\q_1=l.sin{\frac{\theta}{2}}\\q_2=m.sin{\frac{\theta}{2}}\\q_3=n.sin{\frac{\theta}{2}}\end{cases}</script><p>使用四元数计算先对其Z轴所产生的倾斜误差$Q_{E1}$,</p>
+<script type="math/tex; mode=display">Q_{E1}=a_0^T.Q_z.a_0</script><p>对于步骤三，从总误差E中减去倾斜误差$Q<em>{E1}$,获得扭矩误差$Q</em>{E2}$,</p>
+<script type="math/tex; mode=display">Q_{E2}=Q_Z^T.Q_0^T.Q_1</script><p>利用固定衰减系数$\beta$处理扭转误差，从而获得处理后的扭转误差$Q_{E2d}$</p>
+<script type="math/tex; mode=display">Q_{E2d}=\beta.Q_{E2}</script><p>其中固定衰减系数$\beta$由仿真确定。<br>对于步骤四，将$Q<em>{E1},Q</em>{E2d}$分别转化为轴角：</p>
+<script type="math/tex; mode=display">\theta=2.arccosq_0</script><script type="math/tex; mode=display">\begin{cases} l=\frac{q_1}{\sqrt{1-q_0^2}}\\m=\frac{q_2}{\sqrt{1-q_0^2}}\\n=\frac{q_3}{\sqrt{1-q_0^2}}\end{cases}</script><p>从而得到以轴角形式表示的角度差，通过P控制环，传递给角速度环进行后续的PID计算。</p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">APM</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2020/04/29/%E5%80%BE%E8%BD%AC%E5%88%86%E7%A6%BB/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-quadplane代码分析" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -789,159 +1104,6 @@
 
 
   
-    <article id="post-神经网络设计-实例" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/04/13/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E8%AE%BE%E8%AE%A1-%E5%AE%9E%E4%BE%8B/">神经网络设计-实例</a>
-    </h1>
-  
-
-        
-        <a href="/2020/04/13/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E8%AE%BE%E8%AE%A1-%E5%AE%9E%E4%BE%8B/" class="archive-article-date">
-  	<time datetime="2020-04-13T06:11:54.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-13</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h1><p>水果分类问题：</p>
-<p>有一台能够根据种类把水果进行分类的机器，机器的传送带上装有传感器，这些传感器可以检测到水果的三种特征：形状、纹理、重量。<br>
-        
-          <a class="article-more-a" href="/2020/04/13/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E8%AE%BE%E8%AE%A1-%E5%AE%9E%E4%BE%8B/#more">more >></a>
-        
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">神经网络</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2020/04/13/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E8%AE%BE%E8%AE%A1-%E5%AE%9E%E4%BE%8B/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-win10解决未安装任何音频输出设备" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/04/08/win10%E8%A7%A3%E5%86%B3%E6%9C%AA%E5%AE%89%E8%A3%85%E4%BB%BB%E4%BD%95%E9%9F%B3%E9%A2%91%E8%BE%93%E5%87%BA%E8%AE%BE%E5%A4%87/">win10解决未安装任何音频输出设备</a>
-    </h1>
-  
-
-        
-        <a href="/2020/04/08/win10%E8%A7%A3%E5%86%B3%E6%9C%AA%E5%AE%89%E8%A3%85%E4%BB%BB%E4%BD%95%E9%9F%B3%E9%A2%91%E8%BE%93%E5%87%BA%E8%AE%BE%E5%A4%87/" class="archive-article-date">
-  	<time datetime="2020-04-08T09:44:47.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-08</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>最近刚刚更新了一下win10系统，开始啥问题没有，晚上睡觉关机后，第二天开机，小喇叭处有一个红叉，显示未安装任何音频输出设备。查看了微软的官网以及百度了很多解决方法，电脑重启了n遍还是没有解决，一度接近崩溃，我都怀疑我的声卡坏了，但是由于我电脑有两个系统，另一个系统是有声音的，所以确定硬件没换，还是软件的问题。<br>
-        
-          <a class="article-more-a" href="/2020/04/08/win10%E8%A7%A3%E5%86%B3%E6%9C%AA%E5%AE%89%E8%A3%85%E4%BB%BB%E4%BD%95%E9%9F%B3%E9%A2%91%E8%BE%93%E5%87%BA%E8%AE%BE%E5%A4%87/#more">more >></a>
-        
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">计算机系统</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2020/04/08/win10%E8%A7%A3%E5%86%B3%E6%9C%AA%E5%AE%89%E8%A3%85%E4%BB%BB%E4%BD%95%E9%9F%B3%E9%A2%91%E8%BE%93%E5%87%BA%E8%AE%BE%E5%A4%87/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
   
     <nav id="page-nav">
       <a class="extend prev" rel="prev" href="/page/2/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/4/">Next &amp;raquo;</a>
@@ -956,7 +1118,7 @@
   <div class="outer">
     <div id="footer-info">
     	<div class="footer-left">
-    		&copy; 2021 若枫
+    		&copy; 2022 若枫
     	</div>
       	<div class="footer-right">
       		<a href="http://hexo.io/" target="_blank">Hexo</a>  Theme <a href="https://github.com/litten/hexo-theme-yilia" target="_blank">Yilia</a> by Litten
@@ -1080,6 +1242,10 @@ MathJax.Hub.Queue(function() {
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">飞行器理论知识</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">控制理论</a>
               </li>
             
             <div class="clearfix"></div>
